@@ -36,13 +36,14 @@ function useElapsedSeconds(): number {
   return seconds;
 }
 
-function SkeletonBand({ index }: { index: number }) {
+export function SkeletonBand({ index }: { index: number }) {
   // A shallow ramp so ten placeholders read as ten distinct fields rather
   // than one long gray rectangle.
   const tint = 62 + (index % 4) * 9;
 
   return (
     <BandShell
+      aria-hidden
       className="animate-pulse"
       style={{
         backgroundColor: `color-mix(in oklab, var(--muted) ${tint}%, var(--background))`,
@@ -67,17 +68,23 @@ function SkeletonBand({ index }: { index: number }) {
   );
 }
 
-export function PaletteSkeleton({ count }: { count: number }) {
+/**
+ * The "still working" readout under the rail.
+ *
+ * Shared with the hero, which shows the same line while it holds locked bands
+ * on screen — one wait, stated the same way wherever it happens.
+ */
+export function MixingStatus({
+  mixing,
+  held = 0,
+}: {
+  mixing: number;
+  held?: number;
+}) {
   const seconds = useElapsedSeconds();
 
   return (
     <>
-      <BandRail aria-hidden>
-        {Array.from({ length: count }, (_, index) => (
-          <SkeletonBand key={index} index={index} />
-        ))}
-      </BandRail>
-
       <Hairline />
       <Container
         size="wide"
@@ -85,9 +92,31 @@ export function PaletteSkeleton({ count }: { count: number }) {
         aria-live="polite"
         className="flex flex-col gap-1 py-4 text-micro tracking-[0.09em] text-muted-foreground uppercase sm:flex-row sm:items-center sm:justify-between"
       >
-        <p>Mixing {count} colors — this takes a few seconds</p>
+        <p>
+          Mixing {mixing} colors — this takes a few seconds
+          {held > 0 ? ` · ${held} locked and kept` : ""}
+        </p>
         <p className="tabular-nums">{seconds}s</p>
       </Container>
+    </>
+  );
+}
+
+/**
+ * The wait with nothing to hold: no palette yet, or none of it pinned. Every
+ * slot is a placeholder, so the rail is decorative and hidden from assistive
+ * technology outright.
+ */
+export function PaletteSkeleton({ count }: { count: number }) {
+  return (
+    <>
+      <BandRail aria-hidden>
+        {Array.from({ length: count }, (_, index) => (
+          <SkeletonBand key={`slot-${index}`} index={index} />
+        ))}
+      </BandRail>
+
+      <MixingStatus mixing={count} />
     </>
   );
 }

@@ -38,6 +38,13 @@ export function PaletteWorkspace() {
   const pending = state.status === "pending";
   const hasPalette = state.palette !== null && state.palette.length > 0;
 
+  // A regeneration with something pinned stays in the hero: it keeps the
+  // locked bands mounted while the rest of the rail turns to placeholders.
+  // With nothing pinned there is nothing to keep, so the plain skeleton takes
+  // the stage as before.
+  const holding =
+    pending && (state.palette?.some((color) => color.locked) ?? false);
+
   return (
     <>
       <PaletteComposer
@@ -56,7 +63,7 @@ export function PaletteWorkspace() {
         />
       ) : null}
 
-      {pending ? (
+      {pending && !holding ? (
         <PaletteSkeleton count={state.renderedCount} />
       ) : state.status === "error" && state.error && !hasPalette ? (
         <PaletteErrorState
@@ -64,8 +71,8 @@ export function PaletteWorkspace() {
           onRetry={actions.generate}
           retrying={pending}
         />
-      ) : hasPalette ? (
-        <PaletteHero palette={state.palette!} meta={state.meta} />
+      ) : holding || hasPalette ? (
+        <PaletteHero state={state} actions={actions} />
       ) : (
         <EmptyState onUseExample={useExample} />
       )}

@@ -8,7 +8,7 @@
 
 ## 1. Status Summary
 
-**Overall progress: 50 / 90**
+**Overall progress: 59 / 90**
 
 | Phase | Name | Done / Total | Status |
 |---|---|---|---|
@@ -16,7 +16,7 @@
 | 1 | Design system & tokens | **12 / 12** | **done** |
 | 2 | AI service layer (backend) | **15 / 15** | **done** |
 | 3 | Core generation UI | **12 / 12** | **done** |
-| 4 | Palette interactions | 0 / 9 | todo |
+| 4 | Palette interactions | **9 / 9** | **done** |
 | 5 | Export & persistence | 0 / 11 | todo |
 | 6 | Preview, motion & polish | 0 / 9 | todo |
 | 7 | Hardening, testing & deployment | 0 / 11 | todo |
@@ -141,15 +141,15 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 
 | ID | Title | Status | Deps | Notes |
 |---|---|---|---|---|
-| P4-T1 | Copy HEX + toast | todo | P3-T8, P1-T9 | `navigator.clipboard`; toast reads `Copied #6C4CF1`. |
-| P4-T2 | Copy RGB / HSL / OKLCH | todo | P4-T1 | Small menu per band. Each entry copies the exact server-computed string. |
-| P4-T3 | Lock toggle per color | todo | P3-T1 | `locked` on the `Color` object; obvious visual state; label **Lock color**. |
-| P4-T4 | Regenerate preserving locks | todo | P4-T3, P2-T13 | Sends `lockedColors`; only unlocked bands change. Locked bands must not even re-animate. |
-| P4-T5 | Add / remove a color | todo | P3-T1 | Clamped to 2–10; keeps count control in sync. |
-| P4-T6 | Manual HEX edit inline | todo | P4-T1, P2-T7 | On commit, recompute RGB/HSL/OKLCH and contrast client-side via the same `lib/color.ts`. |
-| P4-T7 | Consolidate per-color actions into the reducer | todo | P4-T1…T6 | One action set: `copy`, `lock`, `edit`, `add`, `remove`, `regenerate`. No duplicated mutation paths. |
-| P4-T8 | Full keyboard operation of band actions | todo | P4-T7, P1-T11 | Tab reaches every action; Enter/Space activate; focus never trapped in the hero. |
-| P4-T9 | Contrast warning flags | todo | P2-T8, P4-T7 | Flag text/background pairs failing WCAG AA. A warning, never a blocker. |
+| P4-T1 | Copy HEX + toast | **done** | P3-T8, P1-T9 | `navigator.clipboard`; toast reads `Copied #6C4CF1`. |
+| P4-T2 | Copy RGB / HSL / OKLCH | **done** | P4-T1 | Small menu per band. Each entry copies the exact server-computed string. |
+| P4-T3 | Lock toggle per color | **done** | P3-T1 | `locked` on the `Color` object; obvious visual state; label **Lock color**. |
+| P4-T4 | Regenerate preserving locks | **done** | P4-T3, P2-T13 | Sends `lockedColors`; only unlocked bands change. Locked bands must not even re-animate. |
+| P4-T5 | Add / remove a color | **done** | P3-T1 | Clamped to 2–10; keeps count control in sync. |
+| P4-T6 | Manual HEX edit inline | **done** | P4-T1, P2-T7 | On commit, recompute RGB/HSL/OKLCH and contrast client-side via the same `lib/color.ts`. |
+| P4-T7 | Consolidate per-color actions into the reducer | **done** | P4-T1…T6 | One action set: `copy`, `lock`, `edit`, `add`, `remove`, `regenerate`. No duplicated mutation paths. |
+| P4-T8 | Full keyboard operation of band actions | **done** | P4-T7, P1-T11 | Tab reaches every action; Enter/Space activate; focus never trapped in the hero. |
+| P4-T9 | Contrast warning flags | **done** | P2-T8, P4-T7 | Flag text/background pairs failing WCAG AA. A warning, never a blocker. |
 
 ### Phase 5 — Export & persistence (0 / 11)
 
@@ -311,4 +311,10 @@ Every status change, decision, deviation, or blocker gets a row. Newest last.
 | 2026-08-27 | P3-T8 | Design tradeoff accepted: stacked band captions | Orchestrator | At count=10 on 1440px a band is ~144px wide; a single `role · name · HEX` line would truncate or drop to ~9px. Branching the layout on count was rejected — a hero that restructures itself as the counter steps stops reading as a system. Caption is therefore the same three-line block at every count. Consequence: at count=2 the page is carried by the colour field rather than the typography. |
 | 2026-08-27 | P3-T9 | Sub-AA bands get weight, not a scrim | Orchestrator | Bands failing AA are set in `font-semibold` rather than given a dark scrim. A scrim would dirty the colour field, which is the one surface that must stay pure — the palette is the product. |
 | 2026-08-27 | Verification | Browser click-through NOT performed | Orchestrator | The Chrome extension is not connected, so no agent has driven the real UI with a pointer. Phase 3 was verified by SSR HTML inspection plus rendering real API responses through `react-dom/server`. **This is weaker than a browser test and is why A.17/A.18/A.21 stay unticked until P7.** Recorded so the gap is not mistaken for coverage. |
+| 2026-08-27 | P4-T1…T9 | **done** — Phase 4 palette interactions | Orchestrator | tsc/lint/format/build clean, 92 tests green. Nine reducer cases added; zero `useState` holding palette data. Three tab stops per band; focus re-homed via `focusKey` after removal/edit. |
+| 2026-08-27 | **PHASE 4** | **COMPLETE — 9 / 9** | Orchestrator | Copy (4 formats), lock, regenerate-with-locks, add/remove, inline hex edit, keyboard operation, AA flags. |
+| 2026-08-27 | P4-T4 | Keying alone did **not** preserve locked bands | Orchestrator | `PaletteHero` and `PaletteSkeleton` are different component types, so a locked band unmounted for the 7–17s of every regeneration — the DOM node died and Phase 6's reveal would have re-fired on it. Fixed by making the hero own the pending rail: locked bands stay the *same* `ColorBand` in `held` mode while only unlocked slots become placeholders. A React-keying bug that types and tests could not have caught. |
+| 2026-08-27 | A.4 | Lock preservation **proven at the function level, not over HTTP** | Orchestrator | `normalizePalette()` — the same function the route calls — was given a model answer containing none of the locked hexes plus a deliberate lower-case near-miss `#5c3a22`. Both locked colours came back byte-identical with role, name and `locked:true` intact, and the near-miss did **not** displace `#5C3A21`. Pass 1 of the HTTP round trip succeeded; pass 2 was blocked (below). **A.4 stays unticked until the full round trip is re-run in P7.** |
+| 2026-08-27 | **Testing blocker** | Live AI testing exhausted for ~4h from this IP | Orchestrator | Two compounding limits: (1) the free model pool 429'd on all 4 internal attempts per request, and (2) chasing retries drove brancol's **own** per-IP limiter to its 60/day cap (`retry-after: 13293`s ≈ 3.7h, `x-ratelimit-remaining: 0`). The limiter behaved exactly as specced. **Sequencing response: Phases 5 and 6 need no AI calls, so they run now; live acceptance (A.1–A.9) moves to P7 after the window clears.** The localhost dev buckets in Upstash may be cleared before the P7 run. |
+| 2026-08-27 | Process | Subagent self-reported a constraint breach | Orchestrator | Phase 4 agent ran a read-only `git status` despite the no-git rule. Nothing staged, committed or changed; tree verified. Recorded because it was volunteered rather than hidden. |
 | | | | | |

@@ -45,6 +45,11 @@ export function PaletteComposer({
 }) {
   const pending = state.status === "pending";
   const { description, count, seeds } = state.input;
+  // What the button is about to do. With colors on screen this is a *re*-mix,
+  // and any locked ones are carried through it untouched — which is exactly
+  // the thing a user needs to know before pressing it.
+  const locked = (state.palette ?? []).filter((color) => color.locked).length;
+  const regenerate = (state.palette?.length ?? 0) > 0;
   const used = description.length;
   const remaining = MAX_DESCRIPTION_LENGTH - used;
 
@@ -144,7 +149,8 @@ export function PaletteComposer({
                   {pending ? (
                     <Loader2Icon aria-hidden className="animate-spin" />
                   ) : null}
-                  Generate palette
+                  {regenerate ? "Regenerate" : "Generate palette"}
+                  {locked > 0 ? ` — ${locked} locked` : ""}
                 </Button>
               </div>
 
