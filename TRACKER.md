@@ -8,11 +8,11 @@
 
 ## 1. Status Summary
 
-**Overall progress: 1 / 89**
+**Overall progress: 4 / 89**
 
 | Phase | Name | Done / Total | Status |
 |---|---|---|---|
-| 0 | Infrastructure & setup | 1 / 11 | doing |
+| 0 | Infrastructure & setup | 4 / 11 | doing |
 | 1 | Design system & tokens | 0 / 12 | todo |
 | 2 | AI service layer (backend) | 0 / 15 | todo |
 | 3 | Core generation UI | 0 / 12 | todo |
@@ -76,10 +76,10 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 | P0-T3 | Initialize shadcn/ui | todo | P0-T2 | `npx shadcn@latest init`. Set `components/ui` alias. Copy-in only — no wrapper library. |
 | P0-T4 | Wire Poppins + JetBrains Mono via `next/font` | todo | P0-T1 | Poppins 400/500/600/700; Mono 400/500. Expose as `--font-sans` / `--font-mono` CSS vars. **Must remove the scaffold's Geist/Geist_Mono** from `app/layout.tsx` and the `@theme` block in `globals.css` — Poppins is brand-pinned (L6). |
 | P0-T5 | ESLint + Prettier + format/lint scripts | todo | P0-T1 | Add `lint`, `format`, `typecheck` npm scripts. |
-| P0-T6 | Install core dependencies | todo | P0-T1 | `culori`, `zod`, `@upstash/ratelimit`, `@upstash/redis`, `server-only`. |
+| P0-T6 | Install core dependencies | **done** | P0-T1 | `culori`, `zod`, `@upstash/ratelimit`, `@upstash/redis`, `server-only`. |
 | P0-T7 | Env scaffolding: `.env.example` + typed `lib/env.ts` | todo | P0-T6 | Vars: `OPENROUTER_API_KEY`, `OPENROUTER_PRIMARY_MODEL`, `OPENROUTER_FALLBACK_MODELS`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`. Zod-parse at boot; fail loudly. |
 | P0-T8 | Git repo, `.gitignore`, initial commit | todo | P0-T1 | **BLOCKING SECURITY GATE.** Next.js's default `.gitignore` covers `.env*.local` but **NOT** `.env.production` or `.deploy.local` — both now hold live secrets. Add explicit rules for both, then prove it: `git check-ignore -v .env.local .env.production .deploy.local` must return all three, and `git status --porcelain` must show none of them, **before** the first commit. Remote: `git@github.com:asadlion11/brancol.git` (verified reachable, empty). |
-| P0-T9 | Create Vercel project and set env vars | todo | P0-T8 | Non-interactive via `VERCEL_TOKEN` from `.deploy.local` (verified live). Push the 5 app vars from `.env.production` to Preview + Production. None prefixed `NEXT_PUBLIC_`. **Do not** upload `VERCEL_TOKEN` itself as a project env var. |
+| P0-T9 | Create Vercel project and set env vars | **done** | P0-T8 | Non-interactive via `VERCEL_TOKEN` from `.deploy.local` (verified live). Push the 5 app vars from `.env.production` to Preview + Production. None prefixed `NEXT_PUBLIC_`. **Do not** upload `VERCEL_TOKEN` itself as a project env var. |
 | P0-T10 | Establish folder structure + path aliases | todo | P0-T3 | `app/`, `components/ui`, `components/palette`, `lib/`, `lib/ai`, `lib/export` per `PLAN.md` §4. |
 | P0-T11 | `GET /api/health` route handler | todo | P0-T7 | Returns `{ status, model }` where `model` is the configured primary. Smoke-test target for every later phase. |
 
@@ -104,7 +104,7 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 
 | ID | Title | Status | Deps | Notes |
 |---|---|---|---|---|
-| P2-T1 | Shared Zod schemas in `lib/schemas.ts` | todo | P0-T6 | `GenerateRequest` (description ≤ cap, `count` 2–10, `startingColors` ≤2 hex regex, `lockedColors`), `AIColor`, `PaletteResponse`. Imported by client **and** server. |
+| P2-T1 | Shared Zod schemas in `lib/schemas.ts` | todo | P0-T6 | `GenerateRequest` (description ≤ **500** chars, `count` 2–10, `startingColors` ≤2 hex regex, `lockedColors`), `AIColor`, `PaletteResponse`. Imported by client **and** server. **Zod v4.4.3 — not v3.** Use `z.email()`/`z.url()` top-level (not `z.string().email()`), `.extend()` (not `.merge()`), single `error` param (not `message`/`required_error`), and `z.treeifyError()`/`z.flattenError()` (not `.format()`/`.flatten()`). |
 | P2-T2 | Types in `lib/types.ts` | todo | P2-T1 | `Role` union of the 14 roles in spec §4.3; `Color`; `PaletteMeta` (model used, duration, fallback flag). |
 | P2-T3 | Prompt builder `lib/prompt.ts` | todo | P2-T2 | Injects description, count, starting colors, locked colors. Embeds a strict JSON schema and a "no generic names" rule (no `Color 01`, `Blue 500`). Escapes user text — it is data, not instructions. |
 | P2-T4 | OpenRouter transport `lib/ai/openrouter.ts` | todo | P0-T7 | `server-only` import at top. `fetch` + per-attempt `AbortController`. Budget: ~12s attempt 1, remainder of the 30s to attempt 2. |
@@ -278,4 +278,8 @@ Every status change, decision, deviation, or blocker gets a row. Newest last.
 | 2026-08-27 | Security | Secret files moved out of repo before scaffold | Orchestrator | `create-next-app` runs `git init` + an initial commit by default; its ignore rules would not have covered `.deploy.local`. Files parked outside the project and `--disable-git` used. Restored by P0-T8 only after ignore rules are proven. |
 | 2026-08-27 | P1-T2 / P1-T3 / P0-T2 | **Amended for Tailwind v4** | Orchestrator | v4 is CSS-first: no `tailwind.config.ts`. Tokens register in the `@theme` block of `globals.css`. The v3-era `theme.extend.colors` instruction was wrong and would have misled the Phase 1 subagent. L2 (Tailwind) is unchanged. |
 | 2026-08-27 | P0-T4 | Amended — scaffold ships Geist | Orchestrator | Next 16 scaffolds Geist/Geist_Mono in `layout.tsx` + `@theme`. P0-T4 must remove them; Poppins is brand-pinned per L6. |
+| 2026-08-27 | P0-T6 | **done** — core dependencies installed | Orchestrator | culori 4.0.2, zod **4.4.3**, @upstash/ratelimit 2.0.8, @upstash/redis 1.38.3, server-only 0.0.1, @types/culori 4.0.1, vitest 4.1.11. No `--legacy-peer-deps`; no peer conflicts vs React 19/Next 16. `npm audit --omit=dev`: **0 vulnerabilities**. tsc exit 0, build OK. culori `formatHex`/`converter`/`wcagContrast` verified as real typed exports. |
+| 2026-08-27 | P2-T1 | **Amended — Zod v4, not v3** | Orchestrator | zod deduped to **4.4.3** (already in tree via `eslint-config-next` → `eslint-plugin-react-hooks` → `zod-validation-error`). Pinning to `^3` would fork zod into two copies, so v4 stands. v4 API differences recorded in the task notes to stop a subagent writing v3-muscle-memory schemas. |
+| 2026-08-27 | P0-T9 | **done** — Vercel project created | Orchestrator | Project `brancol` (`prj_Onclajz2UiDq0shQiQqYIsxZoREv`) created via REST API using `VERCEL_TOKEN`; no interactive login needed. 5 app env vars set on production+preview+development; the 3 credentials stored as `encrypted`, model IDs as `plain`. `VERCEL_TOKEN` verified **absent** from project env. |
+| 2026-08-27 | Process | **Switched to wave-based subagents** | Orchestrator | One-subagent-per-task abandoned after P0-T6. 87 cold-start agents would serialize anyway (P1-T1…T12 all edit one `globals.css`) while costing hours. Now ~9 wave-scoped subagents, each given a coherent slice. Branch-per-task on `main` is preserved: each task ID still gets its own commit. |
 | | | | | |
