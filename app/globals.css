@@ -4,41 +4,145 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ==========================================================================
+   Brand tokens — spec-pinned. Single source of truth for every brand hex.
+   These are mode-independent: the brand does not change between light and
+   dark, only which of them is used for surface vs. text (see `.dark` below).
+   Registered with Tailwind via `@theme inline` so `bg-brand-primary`,
+   `text-brand-secondary`, … generate from THIS definition, not a copy.
+   ========================================================================== */
+:root {
+  --brand-primary: #6c4cf1; /* Brand Purple  — actions, links, active, mark  */
+  --brand-secondary: #211a45; /* Deep Indigo   — headings, nav, strong text   */
+  --brand-accent: #52e3b6; /* Electric Mint — AI/success, used SPARINGLY   */
+  --bg-light: #f8f9fc; /* Soft White    — light-mode background        */
+  --bg-dark: #0f1020; /* Ink           — dark-mode background         */
+  --reversed: #ffffff; /* White         — reversed text, high contrast */
+}
+
+/* ==========================================================================
+   Static theme: neutral ramp + type scale + radius.
+   `static` forces emission of every variable in this block so the ramp is
+   inspectable in the served CSS even before a utility references it.
+   ========================================================================== */
+@theme static {
+  /* --- Neutral ramp -------------------------------------------------------
+     Derived once with culori from --brand-secondary (#211A45): its OKLCH hue
+     (286.94) is held constant while chroma ramps up as the gray darkens, so
+     these are *tuned* grays with a slight indigo cast rather than pure
+     neutrals. Step 900 lands exactly on the brand secondary. Static hex —
+     no runtime color math. Clearing the namespace first removes Tailwind's
+     default neutral gray so only these ten steps exist.
+     ---------------------------------------------------------------------- */
+  --color-gray-*: initial;
+  --color-gray-50: #fafafc;
+  --color-gray-100: #f2f2f6;
+  --color-gray-200: #e3e3e8;
+  --color-gray-300: #d0cfd7;
+  --color-gray-400: #aeadb7;
+  --color-gray-500: #8a8a96;
+  --color-gray-600: #676776;
+  --color-gray-700: #49495c;
+  --color-gray-800: #312f48;
+  --color-gray-900: #211a45;
+
+  /* --- Type scale ---------------------------------------------------------
+     Swiss discipline: few sizes, strong weight contrast, tight tracking as
+     the size grows. Sizes carry their own line-height, tracking and weight
+     so `text-display` is a complete typographic decision, not a font-size.
+     ---------------------------------------------------------------------- */
+  --text-display: clamp(2.5rem, 6vw, 4rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 600;
+
+  --text-title: clamp(1.75rem, 3.2vw, 2.25rem);
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.025em;
+  --text-title--font-weight: 600;
+
+  --text-heading: 1.125rem;
+  --text-heading--line-height: 1.3;
+  --text-heading--letter-spacing: -0.012em;
+  --text-heading--font-weight: 600;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-body--letter-spacing: -0.006em;
+  --text-body--font-weight: 400;
+
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.45;
+  --text-label--letter-spacing: 0;
+  --text-label--font-weight: 500;
+
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.3;
+  --text-micro--letter-spacing: 0.09em;
+  --text-micro--font-weight: 500;
+
+  /* Swiss grid gutter + the page's outer rhythm. */
+  --spacing-gutter: 1.5rem;
+}
+
+/* ==========================================================================
+   Inline theme: everything that must stay live-linked to a CSS variable
+   (mode-swappable surfaces, next/font families, brand tokens).
+   `inline` means the utility emits `var(--brand-primary)` rather than a
+   frozen copy of the hex — one definition, above, and no duplicate.
+   ========================================================================== */
 @theme inline {
+  /* Brand utilities: bg-brand-primary, text-brand-secondary, border-bg-dark… */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-accent: var(--brand-accent);
+  --color-bg-light: var(--bg-light);
+  --color-bg-dark: var(--bg-dark);
+  --color-reversed: var(--reversed);
+
+  /* Fonts. next/font declares --font-poppins / --font-jetbrains-mono on
+     <html>; mapping them here (rather than the old self-referential
+     `--font-sans: var(--font-sans)`) removes the resolution accident that
+     only worked while next/font's declaration happened to be unlayered. */
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+
+  /* shadcn semantic surface — resolved per mode in :root / .dark below. */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -48,83 +152,178 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ==========================================================================
+   Light mode — shadcn's semantic vars mapped onto the brand tokens so every
+   shadcn component inherits the brand without being rewritten.
+   ========================================================================== */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* ≈8px. Inputs and cards only — color fields stay sharp-edged. */
+  --radius: 0.5rem;
+
+  --background: var(--bg-light);
+  --foreground: var(--brand-secondary);
+
+  --card: var(--reversed);
+  --card-foreground: var(--brand-secondary);
+  --popover: var(--reversed);
+  --popover-foreground: var(--brand-secondary);
+
+  --primary: var(--brand-primary);
+  --primary-foreground: var(--reversed);
+
+  --secondary: var(--color-gray-100);
+  --secondary-foreground: var(--brand-secondary);
+
+  --muted: var(--color-gray-100);
+  --muted-foreground: var(--color-gray-600);
+
+  --accent: var(--color-gray-100);
+  --accent-foreground: var(--brand-secondary);
+
+  --destructive: #cf2f26;
+  --destructive-foreground: var(--reversed);
+
+  --border: var(--color-gray-200);
+  --input: var(--color-gray-300);
+  --ring: var(--brand-primary);
+
+  --chart-1: var(--brand-primary);
+  --chart-2: var(--brand-accent);
+  --chart-3: var(--brand-secondary);
+  --chart-4: var(--color-gray-400);
+  --chart-5: var(--color-gray-600);
+
+  --sidebar: var(--reversed);
+  --sidebar-foreground: var(--brand-secondary);
+  --sidebar-primary: var(--brand-primary);
+  --sidebar-primary-foreground: var(--reversed);
+  --sidebar-accent: var(--color-gray-100);
+  --sidebar-accent-foreground: var(--brand-secondary);
+  --sidebar-border: var(--color-gray-200);
+  --sidebar-ring: var(--brand-primary);
 }
 
+/* ==========================================================================
+   Dark mode — same brand tokens, inverted roles. Ink ground, Soft White ink.
+   ========================================================================== */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: var(--bg-dark);
+  --foreground: var(--bg-light);
+
+  --card: var(--color-gray-900);
+  --card-foreground: var(--bg-light);
+  --popover: var(--color-gray-900);
+  --popover-foreground: var(--bg-light);
+
+  --primary: var(--brand-primary);
+  --primary-foreground: var(--reversed);
+
+  --secondary: var(--color-gray-800);
+  --secondary-foreground: var(--bg-light);
+
+  --muted: var(--color-gray-800);
+  --muted-foreground: var(--color-gray-400);
+
+  --accent: var(--color-gray-800);
+  --accent-foreground: var(--bg-light);
+
+  --destructive: #ff6b60;
+  --destructive-foreground: var(--bg-dark);
+
+  --border: var(--color-gray-800);
+  --input: var(--color-gray-700);
+  --ring: var(--brand-primary);
+
+  --chart-1: var(--brand-primary);
+  --chart-2: var(--brand-accent);
+  --chart-3: var(--color-gray-300);
+  --chart-4: var(--color-gray-500);
+  --chart-5: var(--color-gray-700);
+
+  --sidebar: var(--color-gray-900);
+  --sidebar-foreground: var(--bg-light);
+  --sidebar-primary: var(--brand-primary);
+  --sidebar-primary-foreground: var(--reversed);
+  --sidebar-accent: var(--color-gray-800);
+  --sidebar-accent-foreground: var(--bg-light);
+  --sidebar-border: var(--color-gray-800);
+  --sidebar-ring: var(--brand-primary);
+}
+
+/* ==========================================================================
+   Typographic utilities. Mono is restricted to hex values and code — never
+   body copy.
+   ========================================================================== */
+
+/* Hex values: `#6C4CF1`. Tabular, uppercase, ligatures off.
+   `@apply` rather than `var(--font-mono)` — the family lives in
+   `@theme inline`, so it is never emitted as a `:root` custom property. */
+@utility type-hex {
+  @apply font-mono;
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Exported code blocks / token snippets. */
+@utility type-code {
+  @apply font-mono text-label;
+  font-variant-ligatures: none;
+  line-height: 1.65;
+  letter-spacing: 0;
+}
+
+/* Swiss eyebrow: small, spaced, uppercase. Roles, section labels. */
+@utility type-eyebrow {
+  @apply font-sans text-micro;
+  text-transform: uppercase;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    text-size-adjust: 100%;
+  }
+
+  /* A.18 — keyboard focus is visible on EVERY interactive element. This is
+     the floor; components that draw their own ring (shadcn sets
+     `outline-none` in the utilities layer, which outranks this base rule)
+     replace it with an equally visible one. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Never suppress focus for keyboard users. */
+  :focus-visible:disabled {
+    outline: none;
+  }
+}
+
+/* ==========================================================================
+   A.20 — reduced-motion baseline kill switch. Unlayered + !important so it
+   outranks every normal declaration, including tw-animate-css utilities.
+   L21: the product has exactly one motion moment; this removes it.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-delay: 0ms !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }
