@@ -1,0 +1,29 @@
+# build output
+.next/
+out/
+build/
+coverage/
+
+# deps
+node_modules/
+
+# tooling state
+.claude/
+
+# lockfiles & generated
+package-lock.json
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# assets
+public/
+*.ico
+
+# env files (never touch)
+.env*
+.deploy.local
+
+# orchestrator-owned docs — Prettier must never rewrite these
+TRACKER.md
+PLAN.md
+brancol-spec.md
