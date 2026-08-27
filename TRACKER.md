@@ -8,12 +8,12 @@
 
 ## 1. Status Summary
 
-**Overall progress: 11 / 89**
+**Overall progress: 23 / 89**
 
 | Phase | Name | Done / Total | Status |
 |---|---|---|---|
 | 0 | Infrastructure & setup | **11 / 11** | **done** |
-| 1 | Design system & tokens | 0 / 12 | todo |
+| 1 | Design system & tokens | **12 / 12** | **done** |
 | 2 | AI service layer (backend) | 0 / 15 | todo |
 | 3 | Core generation UI | 0 / 12 | todo |
 | 4 | Palette interactions | 0 / 9 | todo |
@@ -87,18 +87,18 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 
 | ID | Title | Status | Deps | Notes |
 |---|---|---|---|---|
-| P1-T1 | Define brand CSS custom properties (light + dark) | todo | P0-T2 | Spec §7: `--brand-primary #6C4CF1`, `--brand-secondary #211A45`, `--brand-accent #52E3B6`, `--bg-light #F8F9FC`, `--bg-dark #0F1020`, `--reversed #FFFFFF`. |
-| P1-T2 | Map tokens into Tailwind theme | todo | P1-T1 | **Tailwind v4 — CSS-first.** There is no `tailwind.config.ts`. Register tokens in the `@theme` block of `app/globals.css` (e.g. `--color-brand-primary: var(--brand-primary);`), which generates `bg-brand-primary` etc. One definition, not two. |
-| P1-T3 | Derive neutral gray ramp 50–900 | todo | P1-T1 | For hairlines, borders, muted text. Derive with culori from `--brand-secondary` for a tuned (non-pure) gray. Emit as static CSS vars in `@theme` (Tailwind v4) — do not compute at runtime. |
-| P1-T4 | Type scale + display/body/mono utilities | todo | P0-T4 | Few sizes, strong weight contrast, tight tracking on display. Mono restricted to HEX/code. **Fragile:** shadcn emits a self-referential `@theme inline { --font-sans: var(--font-sans) }`. It resolves today only because next/font's declaration is unlayered and beats layered ones. If touching font tokens, rename the next/font vars to `--font-poppins`/`--font-jetbrains-mono` and map them in `@theme inline` to kill the self-reference. |
-| P1-T5 | Swiss grid primitives: `Container`, `Grid`, `Hairline` | todo | P1-T2 | 12-column, generous whitespace, left-aligned, asymmetric. |
-| P1-T6 | `Button` component (primary / ghost / icon) | todo | P1-T2 | shadcn base, brand-tokenized. Radius ≈8px. |
-| P1-T7 | `Textarea` + `Input` components | todo | P1-T2 | Includes invalid/disabled states used later by hex editing. |
-| P1-T8 | Count control (2–10) component | todo | P1-T6 | Stepper or segmented control; clamps at both ends; keyboard arrows work. |
-| P1-T9 | Toast system | todo | P1-T2 | shadcn/sonner. Message format: `Copied #6C4CF1`. |
-| P1-T10 | Theme provider + light/dark toggle | todo | P1-T1 | Class-based dark mode, no flash on load, respects system preference. |
-| P1-T11 | Global focus-visible ring + reduced-motion baseline | todo | P1-T2 | Visible ring on **every** interactive element (A.18). `@media (prefers-reduced-motion: reduce)` kill-switch. |
-| P1-T12 | App shell: header with lowercase wordmark, footer, main | todo | P1-T5 | Quiet chrome — the hero is the product, not the nav. |
+| P1-T1 | Define brand CSS custom properties (light + dark) | **done** | P0-T2 | Spec §7: `--brand-primary #6C4CF1`, `--brand-secondary #211A45`, `--brand-accent #52E3B6`, `--bg-light #F8F9FC`, `--bg-dark #0F1020`, `--reversed #FFFFFF`. |
+| P1-T2 | Map tokens into Tailwind theme | **done** | P1-T1 | **Tailwind v4 — CSS-first.** There is no `tailwind.config.ts`. Register tokens in the `@theme` block of `app/globals.css` (e.g. `--color-brand-primary: var(--brand-primary);`), which generates `bg-brand-primary` etc. One definition, not two. |
+| P1-T3 | Derive neutral gray ramp 50–900 | **done** | P1-T1 | For hairlines, borders, muted text. Derive with culori from `--brand-secondary` for a tuned (non-pure) gray. Emit as static CSS vars in `@theme` (Tailwind v4) — do not compute at runtime. |
+| P1-T4 | Type scale + display/body/mono utilities | **done** | P0-T4 | Few sizes, strong weight contrast, tight tracking on display. Mono restricted to HEX/code. **Fragile:** shadcn emits a self-referential `@theme inline { --font-sans: var(--font-sans) }`. It resolves today only because next/font's declaration is unlayered and beats layered ones. If touching font tokens, rename the next/font vars to `--font-poppins`/`--font-jetbrains-mono` and map them in `@theme inline` to kill the self-reference. |
+| P1-T5 | Swiss grid primitives: `Container`, `Grid`, `Hairline` | **done** | P1-T2 | 12-column, generous whitespace, left-aligned, asymmetric. |
+| P1-T6 | `Button` component (primary / ghost / icon) | **done** | P1-T2 | shadcn base, brand-tokenized. Radius ≈8px. |
+| P1-T7 | `Textarea` + `Input` components | **done** | P1-T2 | Includes invalid/disabled states used later by hex editing. |
+| P1-T8 | Count control (2–10) component | **done** | P1-T6 | Stepper or segmented control; clamps at both ends; keyboard arrows work. |
+| P1-T9 | Toast system | **done** | P1-T2 | shadcn/sonner. Message format: `Copied #6C4CF1`. |
+| P1-T10 | Theme provider + light/dark toggle | **done** | P1-T1 | Class-based dark mode, no flash on load, respects system preference. |
+| P1-T11 | Global focus-visible ring + reduced-motion baseline | **done** | P1-T2 | Visible ring on **every** interactive element (A.18). `@media (prefers-reduced-motion: reduce)` kill-switch. |
+| P1-T12 | App shell: header with lowercase wordmark, footer, main | **done** | P1-T5 | Quiet chrome — the hero is the product, not the nav. |
 
 ### Phase 2 — AI service layer (backend) (0 / 15)
 
@@ -130,7 +130,7 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 | P3-T4 | Starting colors input (0–2) | todo | P1-T7, P2-T7 | Hex text + native swatch, live validation, live preview chip, removable. |
 | P3-T5 | Generate button + submit flow + client-side Zod | todo | P3-T2, P3-T3, P3-T4 | Label: **Generate palette**. Disabled while pending; no double-submit. |
 | P3-T6 | Typed API client `lib/api.ts` | todo | P2-T10 | `POST /api/generate`, parses with `PaletteResponse` schema, maps error codes to UI messages. |
-| P3-T7 | Palette hero — full-height vertical bands (desktop) | todo | P3-T1 | The signature element. Bands fill the viewport; count 2–10 all look deliberate. |
+| P3-T7 | Palette hero — full-height vertical bands (desktop) | todo | P3-T1 | The signature element. Bands fill the viewport; count 2–10 all look deliberate. **Tailwind v4 gotcha:** `@theme inline` vars are substituted into utilities and are NOT emitted as `:root` custom properties — reference `var(--brand-primary)` at runtime, never `var(--color-brand-primary)`. |
 | P3-T8 | Band content: role · name · HEX | todo | P3-T7, P1-T4 | HEX in JetBrains Mono. Role and name in Poppins. |
 | P3-T9 | Per-band foreground from contrast | todo | P3-T8, P2-T8 | Never hardcode white — compute against each band's own color. |
 | P3-T10 | Loading state: progressive skeleton bands | todo | P3-T7 | Covers the free-model latency window; must not shift layout when real bands arrive. |
@@ -289,4 +289,8 @@ Every status change, decision, deviation, or blocker gets a row. Newest last.
 | 2026-08-27 | P0-T7 | `lib/env.ts` validates lazily, by design | Orchestrator | Module-scope parsing would break `next build` on any machine without secrets. Exports memoized `getEnv()` + an `env` Proxy. Zod v4 idioms used. Upstash vars optional but cross-validated as a pair, so rate limiting can be disabled locally. |
 | 2026-08-27 | P0-T5 | `test` script carries `--passWithNoTests` | Orchestrator | Bare `vitest run` exits 1 with no test files and would red-light the pipeline. **Remove this flag once P2-T14 adds real tests**, otherwise a suite that silently stops collecting tests would still pass. |
 | 2026-08-27 | P0-T9 | Vercel linked to GitHub | Orchestrator | `main` now auto-deploys. Hobby caps at 100 deploys/day; wave-based merging keeps us near ~15, well under. |
+| 2026-08-27 | P1-T1…T12 | **done** — Phase 1 design system | Orchestrator | Brand tokens (#6C4CF1 / #211A45 / #52E3B6 / #F8F9FC / #0F1020) mapped onto shadcn semantic vars so every component inherits the brand. Gray ramp 50–900 derived from `#211A45` via culori at OKLCH hue 286.94°, step 900 landing exactly on brand secondary. Verified by resolving `var()` chains out of the **served** stylesheet, not by reading source. |
+| 2026-08-27 | **PHASE 1** | **COMPLETE — 12 / 12** | Orchestrator | Tokens, ramp, type scale, grid primitives, Button/Input/Textarea/CountControl, toasts, theme provider, focus+reduced-motion baseline, app shell. Dark mode confirmed to actually change 8 of 10 token values in served CSS. |
+| 2026-08-27 | P1-T4 | Font self-reference eliminated | Orchestrator | next/font vars renamed to `--font-poppins`/`--font-jetbrains-mono` and mapped in `@theme inline`. The prior `--font-sans: var(--font-sans)` only worked by an unlayered-vs-layered accident; that fragility is gone. |
+| 2026-08-27 | P3-T7 | **Amended — Tailwind v4 `@theme inline` gotcha** | Orchestrator | `@theme inline` vars are substituted into utilities and never emitted as `:root` custom properties, so they are unreadable at runtime. Phase 3 must use `var(--brand-primary)`, not `var(--color-brand-primary)`. Also: `@theme` tree-shakes unreferenced vars — the gray ramp required `@theme static` to be emitted at all. |
 | | | | | |

@@ -10,12 +10,19 @@ import {
   Loader2Icon,
 } from "lucide-react";
 
+/**
+ * Toasts are the quietest possible confirmation: bottom-left (with the
+ * layout's left-aligned axis), popover surface, hairline border, brand
+ * radius. Copy is set by the caller — see `lib/toast.ts`, which owns the
+ * spec-fixed `Copied #6C4CF1` wording.
+ */
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
 
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
+      position="bottom-left"
       className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4" />,
@@ -29,7 +36,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
+          "--error-bg": "var(--popover)",
+          "--error-text": "var(--destructive)",
+          "--error-border": "var(--destructive)",
           "--border-radius": "var(--radius)",
+          "--font-family": "var(--font-poppins)",
         } as React.CSSProperties
       }
       toastOptions={{
