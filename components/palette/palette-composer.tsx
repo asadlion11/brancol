@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 
 import { MAX_DESCRIPTION_LENGTH } from "@/lib/schemas";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { CountControl } from "@/components/ui/count-control";
@@ -34,9 +33,6 @@ import type {
  * same number by construction.
  */
 
-/** Warn while there is still room to act, not once the cap has already bitten. */
-const WARN_REMAINING = 60;
-
 /** Ceiling for the auto-growing brief, in px. Beyond this it scrolls itself. */
 const MAX_INPUT_HEIGHT = 160;
 
@@ -58,8 +54,6 @@ export function PaletteComposer({
   // the thing a user needs to know before pressing it.
   const locked = (state.palette ?? []).filter((color) => color.locked).length;
   const regenerate = (state.palette?.length ?? 0) > 0;
-  const used = description.length;
-  const remaining = MAX_DESCRIPTION_LENGTH - used;
 
   const descriptionError = state.error?.fields?.description?.join(" ");
 
@@ -91,7 +85,7 @@ export function PaletteComposer({
 
   return (
     <>
-      <Container size="wide" className="py-4 sm:py-6">
+      <Container size="wide" className="pt-8 pb-5 sm:pt-10 sm:pb-6">
         <form onSubmit={submit} noValidate aria-label="Palette brief">
           <Grid>
             <GridItem span={6}>
@@ -117,30 +111,25 @@ export function PaletteComposer({
                 maxLength={MAX_DESCRIPTION_LENGTH}
                 rows={1}
                 aria-invalid={descriptionError ? true : undefined}
-                aria-describedby="description-counter"
+                aria-describedby={
+                  descriptionError ? "description-error" : undefined
+                }
                 className="mt-3 min-h-0 resize-none overflow-y-auto py-3"
                 style={{ maxHeight: `${MAX_INPUT_HEIGHT}px` }}
               />
 
-              <div className="mt-2 flex items-baseline justify-between gap-4">
-                <p className="hidden text-micro tracking-normal text-muted-foreground sm:block">
-                  {descriptionError ?? "⌘↵ to generate"}
-                </p>
+              {/* The counter and the ⌘↵ hint were removed. This slot stays so a
+                  validation error still has somewhere to land, and so the
+                  textarea's aria-describedby never points at a missing node. */}
+              {descriptionError ? (
                 <p
-                  id="description-counter"
+                  id="description-error"
                   aria-live="polite"
-                  className={cn(
-                    "shrink-0 type-hex text-micro tabular-nums",
-                    remaining <= 0
-                      ? "text-destructive"
-                      : remaining <= WARN_REMAINING
-                        ? "text-foreground"
-                        : "text-muted-foreground",
-                  )}
+                  className="mt-2 text-micro tracking-normal text-destructive"
                 >
-                  {used} / {MAX_DESCRIPTION_LENGTH}
+                  {descriptionError}
                 </p>
-              </div>
+              ) : null}
 
               <div className="mt-4">
                 <p className="flex items-center gap-2 text-label font-medium text-foreground">
@@ -188,12 +177,12 @@ export function PaletteComposer({
                 size="lg"
                 disabled={!canSubmit}
                 aria-busy={pending || undefined}
-                className="h-11 w-full flex-1 bg-linear-to-r from-[#7C3AED] to-[#6C4CF1] text-base font-semibold text-white shadow-sm hover:brightness-110 lg:h-13"
+                className="h-10 w-fit shrink-0 grow-0 self-start bg-linear-to-r from-[#7C3AED] to-[#6C4CF1] px-5 text-sm font-semibold text-white shadow-sm hover:brightness-110"
               >
                 {pending ? (
                   <Loader2Icon aria-hidden className="animate-spin" />
                 ) : (
-                  <SparklesIcon aria-hidden className="size-5" />
+                  <SparklesIcon aria-hidden className="size-4" />
                 )}
                 {regenerate ? "Regenerate" : "Generate"}
                 {locked > 0 ? ` — ${locked} locked` : ""}

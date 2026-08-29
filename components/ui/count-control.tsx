@@ -44,7 +44,7 @@ type CountControlProps = Omit<
 function CountControl({
   className,
   value,
-  defaultValue = 5,
+  defaultValue = DEFAULT_MIN,
   onValueChange,
   min = DEFAULT_MIN,
   max = DEFAULT_MAX,
@@ -53,6 +53,8 @@ function CountControl({
   ...props
 }: CountControlProps) {
   const isControlled = value !== undefined;
+  // Non-null only while the field is being typed into.
+  const [draft, setDraft] = React.useState<string | null>(null);
   const [internal, setInternal] = React.useState(() =>
     clamp(defaultValue, min, max),
   );
@@ -69,7 +71,7 @@ function CountControl({
     [current, isControlled, max, min, onValueChange],
   );
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (disabled) return;
 
     switch (event.key) {
@@ -126,23 +128,50 @@ function CountControl({
         <MinusIcon />
       </Button>
 
-      <div
-        role="spinbutton"
-        tabIndex={disabled ? -1 : 0}
-        aria-valuenow={current}
-        aria-valuemin={min}
-        aria-valuemax={max}
-        aria-valuetext={`${current} colors`}
+      {/* A real input, so the count can be typed as well as stepped. `draft`
+          holds what the user is mid-way through typing — including the empty
+          string, which must be allowed or backspace is impossible — while
+          `current` stays the committed, clamped value. Blur and Enter commit;
+          Escape abandons the draft. */}
+      <input
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        value={draft ?? String(current)}
         aria-label={label}
-        aria-disabled={disabled || undefined}
-        onKeyDown={handleKeyDown}
+        aria-describedby={undefined}
+        disabled={disabled}
+        // Select on focus: this field holds one or two digits, so typing
+        // should replace the value rather than append to it — otherwise
+        // clicking in and typing "7" reads as "27" and clamps to the max.
+        onFocus={(event) => event.target.select()}
+        onChange={(event) => {
+          const next = event.target.value.replace(/[^0-9]/g, "").slice(0, 2);
+          setDraft(next);
+        }}
+        onBlur={() => {
+          if (draft !== null && draft !== "") commit(Number(draft));
+          setDraft(null);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            if (draft !== null && draft !== "") commit(Number(draft));
+            setDraft(null);
+            return;
+          }
+          if (event.key === "Escape") {
+            setDraft(null);
+            return;
+          }
+          if (draft === null) handleKeyDown(event);
+        }}
         className={cn(
-          "min-w-9 rounded-md px-1 text-center text-label font-semibold tabular-nums select-none",
+          "w-9 rounded-md bg-transparent px-1 text-center text-label font-semibold tabular-nums",
           "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40",
+          "disabled:cursor-not-allowed",
         )}
-      >
-        {current}
-      </div>
+      />
 
       <Button
         type="button"

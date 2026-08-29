@@ -126,7 +126,7 @@ export type PaletteState = {
   hydrated: boolean;
 };
 
-export const DEFAULT_COUNT = 5;
+export const DEFAULT_COUNT = 2;
 
 type Action =
   | { type: "description/set"; value: string }
