@@ -138,12 +138,8 @@ export function StartingColors({
 
   return (
     <div>
-      <p className="type-eyebrow text-muted-foreground">
-        Starting colors — optional
-      </p>
-
       {seeds.length > 0 ? (
-        <ul className="mt-3 flex flex-col gap-3">
+        <ul className="flex flex-col gap-3">
           {seeds.map((seed, index) => (
             <SeedRow
               key={seed.id}
@@ -161,7 +157,7 @@ export function StartingColors({
         type="button"
         variant="outline"
         size="sm"
-        className="mt-3"
+        className=""
         disabled={disabled || full}
         onClick={() => onAdd()}
       >

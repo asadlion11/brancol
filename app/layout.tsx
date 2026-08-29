@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 
-import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { SkipLink } from "@/components/skip-link";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -87,14 +86,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${poppins.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex h-dvh flex-col overflow-hidden">
         <ThemeProvider>
           <SkipLink />
           <SiteHeader />
-          <main id="main" tabIndex={-1} className="flex flex-1 flex-col">
+          <main
+            id="main"
+            tabIndex={-1}
+            className="flex min-h-0 flex-1 flex-col"
+          >
             {children}
           </main>
-          <SiteFooter />
           <Toaster />
         </ThemeProvider>
       </body>

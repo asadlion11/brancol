@@ -17,7 +17,11 @@ export default function Home() {
 
       <Hairline />
 
-      <PaletteWorkspace />
+      {/* One viewport, no scroll: this column owns the remaining height and
+          centres the brief + output inside it. */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PaletteWorkspace />
+      </div>
     </>
   );
 }

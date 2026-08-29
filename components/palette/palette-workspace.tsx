@@ -9,6 +9,7 @@ import {
 } from "@/components/palette/palette-error";
 import { PaletteHero } from "@/components/palette/palette-hero";
 import { PaletteSkeleton } from "@/components/palette/palette-skeleton";
+import { OutputPlaceholder } from "@/components/palette/output-placeholder";
 import { usePaletteMachine } from "@/components/palette/use-palette";
 import { usePalettePersistence } from "@/components/palette/use-persistence";
 
@@ -102,7 +103,9 @@ export function PaletteWorkspace() {
         />
       ) : holding || hasPalette ? (
         <PaletteHero state={state} actions={actions} />
-      ) : null}
+      ) : (
+        <OutputPlaceholder />
+      )}
 
       <LiveRegion announcement={state.announcement} />
     </>

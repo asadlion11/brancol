@@ -25,8 +25,11 @@ function BandRail({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="band-rail"
       className={cn(
-        "flex w-full flex-1 flex-col",
-        "md:min-h-[min(44rem,calc(100svh-11rem))] md:flex-row",
+        // One-viewport layout: the rail takes exactly the height the page has
+        // left over. No min-height — a fixed floor is what pushed the page
+        // into a scrollbar at ten colors.
+        "flex min-h-0 w-full flex-1 flex-col",
+        "md:flex-row",
         className,
       )}
       {...props}
@@ -43,8 +46,14 @@ function BandShell({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="band"
       className={cn(
-        "relative flex min-h-24 flex-1 flex-col justify-between",
-        "px-5 py-4 sm:min-h-28 md:px-4 md:py-6",
+        // Mobile stacks the rail, so a high count makes each band a thin
+        // strip — a top/bottom split has no room to render a caption there.
+        // Below md the band is therefore ONE row: caption left, controls
+        // right. From md up the bands are full-height columns and the
+        // poster layout returns.
+        "relative flex min-h-0 flex-1 basis-0 items-center justify-between gap-3 overflow-hidden",
+        "flex-row md:flex-col md:items-stretch md:gap-0",
+        "px-4 py-1.5 md:px-4 md:py-5",
         className,
       )}
       {...props}

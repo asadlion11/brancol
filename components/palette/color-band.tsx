@@ -236,14 +236,18 @@ function BandCaption({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mt-8 flex flex-col md:mt-0">
+    // Mobile stacks the rail, so a band can be a thin strip when the count is
+    // high. The caption therefore runs INLINE on small screens — role, name
+    // and value on one line stay legible at ~32px — and only becomes the
+    // stacked block once the bands are full-height columns.
+    <div className="order-1 flex min-w-0 flex-1 flex-row flex-wrap items-baseline gap-x-2 md:order-none md:mt-0 md:flex-none md:flex-col md:items-stretch">
       <span aria-hidden className="type-eyebrow opacity-75">
         {color.role}
       </span>
       <span
         aria-hidden
         className={cn(
-          "mt-1 text-label leading-snug text-balance",
+          "text-label leading-snug text-balance md:mt-1",
           // Below AA the caption is the first thing to go soft, so it gets
           // the extra weight rather than a scrim that would dirty the field.
           failsAA ? "font-semibold" : "font-medium",
@@ -261,7 +265,7 @@ function BandCaption({
         // under the rail.
         <span
           aria-hidden
-          className="mt-1.5 flex items-center gap-1 type-hex text-micro opacity-90"
+          className="flex items-center gap-1 type-hex text-micro opacity-90 md:mt-1.5"
         >
           <TriangleAlertIcon aria-hidden className="size-3 shrink-0" />
           AA {ratio.toFixed(2)}
@@ -335,7 +339,7 @@ export function ColorBand({
           : bandLabel(color, failsAA)
       }
     >
-      <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
+      <div className="order-2 flex shrink-0 flex-row-reverse items-center gap-x-2 gap-y-1 md:order-none md:w-full md:flex-row md:flex-wrap md:items-start md:justify-between">
         <span aria-hidden className="type-hex text-micro opacity-55">
           {bandIndex(index)}
         </span>
@@ -436,7 +440,10 @@ export function ColorBand({
         {editing && edit ? (
           <HexEditor edit={edit} color={color} actions={actions} />
         ) : held ? (
-          <span aria-hidden className="mt-0.5 type-hex text-label opacity-90">
+          <span
+            aria-hidden
+            className="type-hex text-label opacity-90 md:mt-0.5"
+          >
             {color.hex}
           </span>
         ) : (
@@ -445,7 +452,7 @@ export function ColorBand({
             ref={(node) => registerAnchor(bandKey, node)}
             onClick={() => actions.copyColor(bandKey, "hex")}
             className={cn(
-              "mt-0.5 -ml-1 w-fit max-w-full truncate rounded-sm px-1 py-0.5 text-left",
+              "-ml-1 w-fit max-w-full truncate rounded-sm px-1 py-0.5 text-left md:mt-0.5",
               "type-hex text-label opacity-90",
               "hover:bg-[color-mix(in_srgb,currentColor_14%,transparent)] hover:opacity-100",
               "focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current",

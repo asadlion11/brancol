@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import dynamic from "next/dynamic";
 import { PlusIcon, TriangleAlertIcon } from "lucide-react";
 
 import { formatRatio } from "@/lib/contrast";
@@ -49,7 +48,7 @@ function ContrastNotice({ palette }: { palette: PaletteState["palette"] }) {
   return (
     <>
       <Hairline />
-      <Container size="wide" className="py-3.5">
+      <Container size="wide" className="py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:gap-4">
           <p className="flex shrink-0 items-center gap-1.5 type-eyebrow text-destructive">
             <TriangleAlertIcon aria-hidden className="size-3.5" />
@@ -82,12 +81,6 @@ function ContrastNotice({ palette }: { palette: PaletteState["palette"] }) {
  * viewport. Splitting it out keeps that weight off the first load without
  * costing anything: it still renders on the server, so it is in the HTML.
  */
-const PalettePreview = dynamic(() =>
-  import("@/components/palette/palette-preview").then(
-    (mod) => mod.PalettePreview,
-  ),
-);
-
 export function PaletteHero({
   state,
   actions,
@@ -132,7 +125,7 @@ export function PaletteHero({
     : 0;
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col">
       {/* The rail names itself for assistive technology (below), but the page
           also needs a heading outline: without this, everything between the
           brief and the preview is one unlabelled run. Visually hidden, because
@@ -211,14 +204,8 @@ export function PaletteHero({
               </p>
             ) : null}
           </Container>
-
-          <PalettePreview
-            palette={colors}
-            scheme={state.previewScheme}
-            onSchemeChange={actions.setPreviewScheme}
-          />
         </>
       )}
-    </>
+    </div>
   );
 }

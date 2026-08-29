@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Loader2Icon } from "lucide-react";
+import {
+  Loader2Icon,
+  PaletteIcon,
+  PipetteIcon,
+  SparklesIcon,
+} from "lucide-react";
 
 import { MAX_DESCRIPTION_LENGTH } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
@@ -32,6 +37,9 @@ import type {
 /** Warn while there is still room to act, not once the cap has already bitten. */
 const WARN_REMAINING = 60;
 
+/** Ceiling for the auto-growing brief, in px. Beyond this it scrolls itself. */
+const MAX_INPUT_HEIGHT = 160;
+
 export function PaletteComposer({
   state,
   actions,
@@ -55,6 +63,17 @@ export function PaletteComposer({
 
   const descriptionError = state.error?.fields?.description?.join(" ");
 
+  // Grows with the text the way a chat composer does: reset to `auto` first so
+  // the box can shrink again on delete, then match content up to a ceiling —
+  // past that it scrolls internally rather than pushing the page into a
+  // scrollbar, which the one-viewport layout cannot afford.
+  React.useLayoutEffect(() => {
+    const el = descriptionRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_HEIGHT)}px`;
+  }, [description, descriptionRef]);
+
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
@@ -72,15 +91,19 @@ export function PaletteComposer({
 
   return (
     <>
-      <Container size="wide" className="py-8 sm:py-10">
+      <Container size="wide" className="py-4 sm:py-6">
         <form onSubmit={submit} noValidate aria-label="Palette brief">
           <Grid>
             <GridItem span={6}>
               <label
                 htmlFor="description"
-                className="type-eyebrow text-muted-foreground"
+                className="flex items-center gap-2 text-label font-medium text-foreground"
               >
-                Describe your project — optional
+                <SparklesIcon aria-hidden className="size-4 text-primary" />
+                Describe your project{" "}
+                <span className="font-normal text-muted-foreground">
+                  (optional)
+                </span>
               </label>
 
               <Textarea
@@ -92,15 +115,15 @@ export function PaletteComposer({
                 onKeyDown={handleKeyDown}
                 disabled={pending}
                 maxLength={MAX_DESCRIPTION_LENGTH}
-                rows={3}
-                placeholder="Calm wellness app — soft, trustworthy, unhurried."
+                rows={1}
                 aria-invalid={descriptionError ? true : undefined}
                 aria-describedby="description-counter"
-                className="mt-3 min-h-28"
+                className="mt-3 min-h-0 resize-none overflow-y-auto py-3"
+                style={{ maxHeight: `${MAX_INPUT_HEIGHT}px` }}
               />
 
               <div className="mt-2 flex items-baseline justify-between gap-4">
-                <p className="text-micro tracking-normal text-muted-foreground">
+                <p className="hidden text-micro tracking-normal text-muted-foreground sm:block">
                   {descriptionError ?? "⌘↵ to generate"}
                 </p>
                 <p
@@ -118,49 +141,63 @@ export function PaletteComposer({
                   {used} / {MAX_DESCRIPTION_LENGTH}
                 </p>
               </div>
+
+              <div className="mt-4">
+                <p className="flex items-center gap-2 text-label font-medium text-foreground">
+                  <PipetteIcon aria-hidden className="size-4 text-primary" />
+                  Add starting color{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (optional)
+                  </span>
+                </p>
+                <div className="mt-3">
+                  <StartingColors
+                    seeds={seeds}
+                    disabled={pending}
+                    onAdd={actions.addSeed}
+                    onUpdate={actions.updateSeed}
+                    onRemove={actions.removeSeed}
+                  />
+                </div>
+              </div>
             </GridItem>
 
             <GridItem
               span={5}
               start={8}
-              className="mt-10 flex flex-col gap-8 lg:mt-0"
+              className="mt-5 flex flex-row items-end gap-3 lg:mt-0 lg:flex-col lg:items-stretch lg:gap-5"
             >
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="type-eyebrow text-muted-foreground">
-                    How many colors
-                  </p>
-                  <div className="mt-3">
-                    <CountControl
-                      value={count}
-                      onValueChange={actions.setCount}
-                      disabled={pending}
-                      label="Number of colors"
-                    />
-                  </div>
+              <div className="shrink-0">
+                <p className="flex items-center gap-2 text-label font-medium text-foreground">
+                  <PaletteIcon aria-hidden className="size-4 text-primary" />
+                  <span className="hidden sm:inline">How many colors?</span>
+                  <span className="sm:hidden">Colors</span>
+                </p>
+                <div className="mt-3">
+                  <CountControl
+                    value={count}
+                    onValueChange={actions.setCount}
+                    disabled={pending}
+                    label="Number of colors"
+                  />
                 </div>
-
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={!canSubmit}
-                  aria-busy={pending || undefined}
-                >
-                  {pending ? (
-                    <Loader2Icon aria-hidden className="animate-spin" />
-                  ) : null}
-                  {regenerate ? "Regenerate" : "Generate palette"}
-                  {locked > 0 ? ` — ${locked} locked` : ""}
-                </Button>
               </div>
 
-              <StartingColors
-                seeds={seeds}
-                disabled={pending}
-                onAdd={actions.addSeed}
-                onUpdate={actions.updateSeed}
-                onRemove={actions.removeSeed}
-              />
+              <Button
+                type="submit"
+                size="lg"
+                disabled={!canSubmit}
+                aria-busy={pending || undefined}
+                className="h-11 w-full flex-1 bg-linear-to-r from-[#7C3AED] to-[#6C4CF1] text-base font-semibold text-white shadow-sm hover:brightness-110 lg:h-13"
+              >
+                {pending ? (
+                  <Loader2Icon aria-hidden className="animate-spin" />
+                ) : (
+                  <SparklesIcon aria-hidden className="size-5" />
+                )}
+                {regenerate ? "Regenerate" : "Generate"}
+                {locked > 0 ? ` — ${locked} locked` : ""}
+              </Button>
             </GridItem>
           </Grid>
         </form>
