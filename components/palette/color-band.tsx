@@ -89,7 +89,9 @@ function CopyItem({
       {copied ? (
         <CheckIcon aria-hidden className="text-muted-foreground" />
       ) : null}
-      <span className="sr-only">Copy {format.toUpperCase()} value</span>
+      <span className="sr-only">
+        Copy {FORMAT_LABELS[format]} value for {color.name}
+      </span>
     </DropdownMenuItem>
   );
 }
@@ -177,11 +179,34 @@ function HexEditor({
   );
 }
 
+/**
+ * How far into the reveal this band starts.
+ *
+ * Capped at six steps: ten bands times a full step would put the last one
+ * most of a second behind the first, and a stagger that outlasts the user's
+ * attention has stopped being a reveal and started being a wait. The cap also
+ * means a single hand-added band — which always mounts at the end of the
+ * rail — appears promptly rather than after everything that came before it.
+ */
+const REVEAL_STEP_MS = 55;
+const REVEAL_MAX_STEPS = 6;
+
+function revealDelay(index: number): string {
+  return `${Math.min(index, REVEAL_MAX_STEPS) * REVEAL_STEP_MS}ms`;
+}
+
 /** The band's ground, its ink, and — when locked — its inset rule. */
-function bandStyle(color: Color, foregroundHex: string): React.CSSProperties {
+function bandStyle(
+  color: Color,
+  foregroundHex: string,
+  index: number,
+): React.CSSProperties {
   return {
     backgroundColor: color.hex,
     color: foregroundHex,
+    // Read by the `[data-reveal]` rule in globals.css, which only exists
+    // inside `prefers-reduced-motion: no-preference`.
+    ["--band-delay" as string]: revealDelay(index),
     // A locked band says so from across the room, drawn in its own ink and
     // inset so the field keeps its hard edge. Inline rather than a utility
     // because the value is a function of `bestForeground`, which Tailwind
@@ -300,7 +325,8 @@ export function ColorBand({
       role="listitem"
       data-locked={color.locked || undefined}
       data-held={held || undefined}
-      style={bandStyle(color, foreground.hex)}
+      data-reveal=""
+      style={bandStyle(color, foreground.hex, index)}
       // A band is a figure with controls on it, not a control itself: one
       // accessible label, then individually named actions inside it.
       aria-label={
@@ -352,6 +378,7 @@ export function ColorBand({
               </DropdownMenuTrigger>
 
               <DropdownMenuContent
+                aria-label={`Actions for ${color.name}`}
                 align="end"
                 onCloseAutoFocus={(event) => {
                   if (!deferFocus.current) return;
@@ -380,6 +407,7 @@ export function ColorBand({
                 >
                   <PencilIcon aria-hidden />
                   Edit hex
+                  <span className="sr-only"> for {color.name}</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
@@ -394,6 +422,9 @@ export function ColorBand({
                   {canRemove
                     ? "Remove color"
                     : `Minimum ${MIN_COLOR_COUNT} colors`}
+                  {canRemove ? (
+                    <span className="sr-only"> {color.name}</span>
+                  ) : null}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -421,7 +452,9 @@ export function ColorBand({
             )}
           >
             <span aria-hidden>{color.hex}</span>
-            <span className="sr-only">Copy hex {color.hex}</span>
+            <span className="sr-only">
+              Copy hex {color.hex} — {color.name}
+            </span>
           </button>
         )}
       </BandCaption>

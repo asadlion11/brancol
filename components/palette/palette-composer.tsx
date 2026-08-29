@@ -73,7 +73,7 @@ export function PaletteComposer({
   return (
     <>
       <Container size="wide" className="py-8 sm:py-10">
-        <form onSubmit={submit} noValidate>
+        <form onSubmit={submit} noValidate aria-label="Palette brief">
           <Grid>
             <GridItem span={6}>
               <label

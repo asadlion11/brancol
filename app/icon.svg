@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="brancol">
+  <!-- The band motif, at 32px: five sharp-edged vertical fields, no radius,
+       no gap, no letterform. The wordmark is type-only and lives in the
+       header; the icon is the palette itself. -->
+  <rect width="32" height="32" fill="#0F1020"/>
+  <rect x="3"  y="6" width="5" height="20" fill="#6C4CF1"/>
+  <rect x="8"  y="6" width="5" height="20" fill="#8E6BF4"/>
+  <rect x="13" y="6" width="5" height="20" fill="#211A45"/>
+  <rect x="18" y="6" width="5" height="20" fill="#52E3B6"/>
+  <rect x="23" y="6" width="6" height="20" fill="#F8F9FC"/>
+</svg>

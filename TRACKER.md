@@ -8,7 +8,7 @@
 
 ## 1. Status Summary
 
-**Overall progress: 66 / 90**
+**Overall progress: 79 / 90**
 
 | Phase | Name | Done / Total | Status |
 |---|---|---|---|
@@ -17,8 +17,8 @@
 | 2 | AI service layer (backend) | **15 / 15** | **done** |
 | 3 | Core generation UI | **12 / 12** | **done** |
 | 4 | Palette interactions | **9 / 9** | **done** |
-| 5 | Export & persistence | 7 / 11 | doing |
-| 6 | Preview, motion & polish | 0 / 9 | todo |
+| 5 | Export & persistence | **11 / 11** | **done** |
+| 6 | Preview, motion & polish | **9 / 9** | **done** |
 | 7 | Hardening, testing & deployment | 0 / 11 | todo |
 
 **Acceptance checklist: 0 / 24 verified.**
@@ -159,11 +159,11 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 | P5-T2 | JSON exporter | **done** | P4-T7 | Full `Color[]` including all four formats. |
 | P5-T3 | Tailwind config exporter | **done** | P5-T2 | `theme.extend.colors` snippet that pastes in and parses with zero edits (A.6). |
 | P5-T4 | Design-token exporter (Figma-compatible) | **done** | P5-T2 | W3C design-token shape. Export only — **no Figma plugin** (spec §9). |
-| P5-T5 | Export dialog: tabbed, copy + download | todo | P5-T1…T4, P1-T9 | Code shown in JetBrains Mono. Label: **Export tokens**. |
-| P5-T6 | localStorage persistence of palette + locks | todo | P4-T7 | Versioned key (`brancol.palette.v1`); ignore and discard unparseable payloads. |
-| P5-T7 | Hydration-safe restore on return | todo | P5-T6 | Restore after mount only. No SSR/client mismatch, no flash of empty state into filled state. |
+| P5-T5 | Export dialog: tabbed, copy + download | **done** | P5-T1…T4, P1-T9 | Code shown in JetBrains Mono. Label: **Export tokens**. |
+| P5-T6 | localStorage persistence of palette + locks | **done** | P4-T7 | Versioned key (`brancol.palette.v1`); ignore and discard unparseable payloads. |
+| P5-T7 | Hydration-safe restore on return | **done** | P5-T6 | Restore after mount only. No SSR/client mismatch, no flash of empty state into filled state. |
 | P5-T8 | Palette ↔ URL encoding | **done** | P4-T7 | Compact: hex without `#`, role as index. Must stay a sane length at count = 10. |
-| P5-T9 | Share link button + copy toast | todo | P5-T8 | Opening the link reproduces the palette **exactly**, including roles and names (A.8). |
+| P5-T9 | Share link button + copy toast | **done** | P5-T8 | Opening the link reproduces the palette **exactly**, including roles and names (A.8). |
 | P5-T10 | Light/dark variant derivation | **done** | P2-T7, P1-T10 | Derive a compatible counterpart set with culori (lightness/chroma mapping), not a naive invert. |
 | P5-T11 | Export tests — outputs parse without edits | **done** | P5-T1…T4 | Parse the CSS, JSON, and Tailwind output programmatically in a test. Directly backs A.6. |
 
@@ -171,15 +171,15 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 
 | ID | Title | Status | Deps | Notes |
 |---|---|---|---|---|
-| P6-T1 | Sample UI preview component | todo | P4-T7 | Nav, buttons, card, body text, muted text — driven entirely by the generated roles. |
-| P6-T2 | Preview light/dark switch | todo | P6-T1, P5-T10 | Judges the palette in both modes (Yusuf's journey). |
-| P6-T3 | Staggered band reveal animation | todo | P3-T7 | The one deliberate motion moment. CSS only; no animation library. |
-| P6-T4 | `prefers-reduced-motion` disables the reveal | todo | P6-T3, P1-T11 | Bands appear instantly and correctly — not a degraded layout (A.20). |
-| P6-T5 | Responsive pass 320px → desktop | todo | P3-T7, P6-T1 | Bands stack horizontally on mobile, run vertical on desktop (A.17). No horizontal page scroll. |
-| P6-T6 | Focus order, skip link, ARIA labels | todo | P4-T8 | Landmarks; each band action has an accessible name including its color's name. |
-| P6-T7 | Toast/live-region announcements | todo | P1-T9 | `aria-live` for copy confirmations and generation completion. |
-| P6-T8 | Metadata, favicon, OG image, wordmark | todo | P1-T12 | Lowercase `brancol` wordmark. OG image reflects the band motif. |
-| P6-T9 | Initial-JS and LCP pass | todo | P6-T5 | Server components where possible; audit bundle; the hero shell must not wait on client JS. |
+| P6-T1 | Sample UI preview component | **done** | P4-T7 | Nav, buttons, card, body text, muted text — driven entirely by the generated roles. |
+| P6-T2 | Preview light/dark switch | **done** | P6-T1, P5-T10 | Judges the palette in both modes (Yusuf's journey). |
+| P6-T3 | Staggered band reveal animation | **done** | P3-T7 | The one deliberate motion moment. CSS only; no animation library. |
+| P6-T4 | `prefers-reduced-motion` disables the reveal | **done** | P6-T3, P1-T11 | Bands appear instantly and correctly — not a degraded layout (A.20). |
+| P6-T5 | Responsive pass 320px → desktop | **done** | P3-T7, P6-T1 | Bands stack horizontally on mobile, run vertical on desktop (A.17). No horizontal page scroll. |
+| P6-T6 | Focus order, skip link, ARIA labels | **done** | P4-T8 | Landmarks; each band action has an accessible name including its color's name. |
+| P6-T7 | Toast/live-region announcements | **done** | P1-T9 | `aria-live` for copy confirmations and generation completion. |
+| P6-T8 | Metadata, favicon, OG image, wordmark | **done** | P1-T12 | Lowercase `brancol` wordmark. OG image reflects the band motif. |
+| P6-T9 | Initial-JS and LCP pass | **done** | P6-T5 | Server components where possible; audit bundle; the hero shell must not wait on client JS. |
 
 ### Phase 7 — Hardening, testing & deployment (0 / 11)
 
@@ -321,4 +321,13 @@ Every status change, decision, deviation, or blocker gets a row. Newest last.
 | 2026-08-29 | P5-T1,T2,T3,T4,T8,T10,T11 | **done** — export + persistence library layer | Orchestrator | tsc/lint/format/build clean. Tests **92 → 169** (+77). Verified by generating real output and reading it, not by trusting the agent: CSS emits `:root` + a `prefers-color-scheme: dark` block; Tailwind emits BOTH a v4 `@theme` block and a v3 `module.exports` config; tokens are W3C `$type`/`$value`. |
 | 2026-08-29 | P5-T10 | Light/dark derivation is genuinely hue-preserving | Orchestrator | Confirmed against real output: `background #F6F2EB → #0A0907` and `text #3A4A42 → #D7E1DC` swap ends, while `accent #D9A59A → #D6A398` and `primary #7FA88E → #83AC92` stay recognisably themselves. This is the OKLCH lightness remap that was specified, not the naive RGB invert that would have destroyed the hue relationships. |
 | 2026-08-29 | Rate limits | **Window has cleared** | Orchestrator | Several days have passed since the 60/day per-IP cap was hit, so live AI verification is available again for Phase 7 acceptance (A.1–A.9). |
+| 2026-08-29 | P5-T5,T6,T7,T9 + P6-T1…T9 | **done** — Phases 5 & 6 | Orchestrator | tsc/lint/format/build clean. Tests **169 → 177**. Export dialog drives its tabs off `EXPORT_FORMATS` (no hardcoded format list); persistence restores in a single StrictMode-guarded mount effect; share links strip `?p=` once consumed so the address bar cannot go stale. |
+| 2026-08-29 | **PHASE 5** | **COMPLETE — 11 / 11** | Orchestrator | Exports, localStorage, share links. URL precedence over storage confirmed in-browser. |
+| 2026-08-29 | **PHASE 6** | **COMPLETE — 9 / 9** | Orchestrator | Preview, reveal motion, responsive, a11y, metadata/OG, bundle pass. |
+| 2026-08-29 | **Verification gap CLOSED** | Real browser testing finally performed | Orchestrator | Headless Chrome 151 driven over CDP. **A.17 measured, not reasoned:** at 320×800 `scrollWidth === clientWidth === 320` with zero overflowing elements, empty state and 10-band palette alike; clean at 375 and 1280 (rail flips `column` → `row`). This retires the gap recorded on 2026-08-27. |
+| 2026-08-29 | A.20 | Reduced-motion done correctly | Orchestrator | The reveal is declared **inside** `@media (prefers-reduced-motion: no-preference)`, so under `reduce` there is no animation *name* at all — not a 1ms stub. Measured under emulation: `animationName: "none"`, `clipPath: "none"`, `opacity: 1`, final geometry intact. |
+| 2026-08-29 | P6-T3 | Locked bands proven not to re-animate | Orchestrator | After a rail reconciliation: `survivingNodesIdentical: true` (every pre-existing band is the same DOM node), survivors hold 0 running animations, only the newly mounted band reports `band-reveal:running`. The reveal is mount-scoped by construction — no JS decides what animates. |
+| 2026-08-29 | **A.12 AT RISK** | First Load JS is 988 kB (**281 kB gzipped**) | Orchestrator | Chunk audit: React+Next runtime ~390 kB; the 484 kB page chunk is dominated by the **full Zod v4 runtime (L5)** and **culori (L4)**, both genuinely needed client-side (response validation, snapshot validation, stranger-link validation, hex→OKLCH for hand-edits and dark variants). `next/dynamic` on the export dialog and preview moved only 12.9 kB — noise against 1 MB. LCP element is the server-rendered `<h1>` and waits on no JS, so LCP may still pass. **P7-T4 must MEASURE LCP rather than infer it.** Reducing this further would require relitigating L4/L5. |
+| 2026-08-29 | P6-T8 | Deleted `app/favicon.ico` | Orchestrator | It was create-next-app's 26 kB Next.js logo and was outranking the brancol `icon.svg` in the served `<link>` tags — the app would have shipped with Vercel's triangle as its identity. |
+| 2026-08-29 | Coverage gap | Preview + reveal have no unit tests | Orchestrator | `vitest.config.mts` scopes collection to `lib/__tests__/**`, and no jsdom/testing-library is installed (`package.json` was off-limits to the agent). Both were covered by live-browser measurement instead. Recorded so the gap is visible rather than assumed covered. |
 | | | | | |

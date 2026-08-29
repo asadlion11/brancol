@@ -18,6 +18,7 @@ import {
 } from "@/lib/schemas";
 import { copyHex, copyText } from "@/lib/toast";
 import { ROLES, type Color, type PaletteMeta, type Role } from "@/lib/types";
+import type { Scheme } from "@/lib/variants";
 
 /**
  * The single owner of every piece of palette state.
@@ -104,6 +105,25 @@ export type PaletteState = {
    * hex editor) so focus lands somewhere deliberate rather than on `<body>`.
    */
   focusKey: string | null;
+  /**
+   * Which mode the sample-UI preview is showing. The generated palette is
+   * always the `light` member of the pair; `dark` is derived with
+   * `lib/variants.ts` at render time and never stored, because it is a
+   * function of the palette and storing it could only let the two drift.
+   */
+  previewScheme: Scheme;
+  /**
+   * The one polite live-region message. `nonce` exists so that copying the
+   * same hex twice in a row is announced twice — an identical string written
+   * into a live region is not re-read by most screen readers.
+   */
+  announcement: { message: string; nonce: number } | null;
+  /**
+   * True once the mount-time restore (URL, then localStorage) has run. The
+   * persistence effect will not write before this flips, so an empty first
+   * render can never overwrite a stored palette.
+   */
+  hydrated: boolean;
 };
 
 export const DEFAULT_COUNT = 5;
@@ -126,7 +146,16 @@ type Action =
   | { type: "edit/change"; value: string }
   | { type: "edit/cancel" }
   | { type: "edit/commit"; key: string; value: string }
-  | { type: "focus/clear" };
+  | { type: "focus/clear" }
+  | {
+      type: "palette/restore";
+      palette: Color[];
+      description: string;
+      source: "url" | "storage";
+    }
+  | { type: "hydrated" }
+  | { type: "preview/scheme"; value: Scheme }
+  | { type: "announce"; message: string };
 
 export function initialPaletteState(): PaletteState {
   return {
@@ -140,6 +169,9 @@ export function initialPaletteState(): PaletteState {
     edit: null,
     lastCopy: null,
     focusKey: null,
+    previewScheme: "light",
+    announcement: null,
+    hydrated: false,
   };
 }
 
@@ -314,6 +346,24 @@ function resizePalette(state: PaletteState, count: number): PaletteState {
   return { ...next, focusKey: null };
 }
 
+/**
+ * Writes one polite announcement onto the state.
+ *
+ * Screen-reader users get the same three facts a sighted user gets from the
+ * toast and the rail: what was copied, what arrived, and how much of it.
+ */
+function announce(state: PaletteState, message: string): PaletteState {
+  return {
+    ...state,
+    announcement: { message, nonce: (state.announcement?.nonce ?? 0) + 1 },
+  };
+}
+
+/** `5 colors` / `1 color` — the count, said the way a person would. */
+function colorCount(count: number): string {
+  return `${count} ${count === 1 ? "color" : "colors"}`;
+}
+
 function paletteReducer(state: PaletteState, action: Action): PaletteState {
   switch (action.type) {
     case "description/set":
@@ -403,11 +453,20 @@ function paletteReducer(state: PaletteState, action: Action): PaletteState {
         focusKey: null,
         renderedCount: action.palette.length,
         input: { ...state.input, count: action.palette.length },
+        announcement: {
+          message: `Palette ready — ${colorCount(action.palette.length)}: ${action.palette
+            .map((color) => `${color.name}, ${color.role}`)
+            .join("; ")}.`,
+          nonce: (state.announcement?.nonce ?? 0) + 1,
+        },
       };
 
     case "generate/reject":
       // The brief is untouched: retry re-sends exactly what the user wrote.
-      return { ...state, status: "error", error: action.error };
+      return announce(
+        { ...state, status: "error", error: action.error },
+        `Generation failed. ${action.error.title}.`,
+      );
 
     case "error/dismiss":
       return {
@@ -416,22 +475,36 @@ function paletteReducer(state: PaletteState, action: Action): PaletteState {
         error: null,
       };
 
-    case "color/copy":
+    case "color/copy": {
       // Copying mutates nothing, but it is still a per-color action and so it
       // still goes through here: the band menu marks whichever value the user
       // last took, which is the only memory of a copy that survives the toast.
-      return { ...state, lastCopy: { key: action.key, format: action.format } };
+      const index = state.bandKeys.indexOf(action.key);
+      const color = index === -1 ? undefined : state.palette?.[index];
+
+      return announce(
+        { ...state, lastCopy: { key: action.key, format: action.format } },
+        color
+          ? `Copied ${FORMAT_LABELS[action.format]} ${color[action.format]} — ${color.name}.`
+          : "Copied.",
+      );
+    }
 
     case "color/lock": {
       const index = state.bandKeys.indexOf(action.key);
       if (!state.palette || index === -1) return state;
 
-      return {
-        ...state,
-        palette: state.palette.map((color, i) =>
-          i === index ? { ...color, locked: !color.locked } : color,
-        ),
-      };
+      const color = state.palette[index];
+
+      return announce(
+        {
+          ...state,
+          palette: state.palette.map((entry, i) =>
+            i === index ? { ...entry, locked: !entry.locked } : entry,
+          ),
+        },
+        `${color.name} ${color.locked ? "unlocked" : "locked"}.`,
+      );
     }
 
     case "color/add":
@@ -502,6 +575,48 @@ function paletteReducer(state: PaletteState, action: Action): PaletteState {
     case "focus/clear":
       return { ...state, focusKey: null };
 
+    case "palette/restore": {
+      // A restore is not a generation: there is no model, no duration and no
+      // fallback to report, so `meta` stays null and the footer simply omits
+      // the line rather than inventing one.
+      const restored: PaletteState = {
+        ...state,
+        status: "success",
+        palette: action.palette,
+        bandKeys: action.palette.map(() => nextBandKey()),
+        meta: null,
+        error: null,
+        edit: null,
+        lastCopy: null,
+        focusKey: null,
+        hydrated: true,
+        renderedCount: action.palette.length,
+        input: {
+          ...state.input,
+          count: action.palette.length,
+          description: action.description || state.input.description,
+        },
+      };
+
+      return announce(
+        restored,
+        action.source === "url"
+          ? `Shared palette loaded — ${colorCount(action.palette.length)}.`
+          : `Your last palette was restored — ${colorCount(action.palette.length)}.`,
+      );
+    }
+
+    case "hydrated":
+      return state.hydrated ? state : { ...state, hydrated: true };
+
+    case "preview/scheme":
+      return state.previewScheme === action.value
+        ? state
+        : { ...state, previewScheme: action.value };
+
+    case "announce":
+      return announce(state, action.message);
+
     default:
       return state;
   }
@@ -563,6 +678,17 @@ export type PaletteActions = {
   cancelEdit: () => void;
   commitEdit: (key: string, value: string) => void;
   clearFocus: () => void;
+  /** Adopts a palette that came from a share link or from localStorage. */
+  restorePalette: (
+    palette: Color[],
+    description: string,
+    source: "url" | "storage",
+  ) => void;
+  /** Marks the mount-time restore as done, with or without a palette. */
+  markHydrated: () => void;
+  setPreviewScheme: (scheme: Scheme) => void;
+  /** Writes one line into the page's polite live region. */
+  announce: (message: string) => void;
 };
 
 /**
@@ -673,6 +799,12 @@ export function usePaletteMachine(): {
       cancelEdit: () => dispatch({ type: "edit/cancel" }),
       commitEdit: (key, value) => dispatch({ type: "edit/commit", key, value }),
       clearFocus: () => dispatch({ type: "focus/clear" }),
+
+      restorePalette: (palette, description, source) =>
+        dispatch({ type: "palette/restore", palette, description, source }),
+      markHydrated: () => dispatch({ type: "hydrated" }),
+      setPreviewScheme: (value) => dispatch({ type: "preview/scheme", value }),
+      announce: (message) => dispatch({ type: "announce", message }),
     }),
     [],
   );

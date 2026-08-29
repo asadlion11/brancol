@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { PlusIcon, TriangleAlertIcon } from "lucide-react";
 
 import { formatRatio } from "@/lib/contrast";
@@ -10,6 +11,7 @@ import { Container } from "@/components/ui/container";
 import { Hairline } from "@/components/ui/hairline";
 import { BandRail } from "@/components/palette/band";
 import { ColorBand } from "@/components/palette/color-band";
+import { PaletteToolbar } from "@/components/palette/palette-actions";
 import { contrastIssues } from "@/components/palette/contrast";
 import {
   MixingStatus,
@@ -73,6 +75,19 @@ function ContrastNotice({ palette }: { palette: PaletteState["palette"] }) {
   );
 }
 
+/**
+ * The sample-UI preview is the only thing on the page that needs
+ * `lib/variants.ts` — and therefore culori's gamut mapping — in the browser.
+ * It also sits below the fold, under a poster that runs to the bottom of the
+ * viewport. Splitting it out keeps that weight off the first load without
+ * costing anything: it still renders on the server, so it is in the HTML.
+ */
+const PalettePreview = dynamic(() =>
+  import("@/components/palette/palette-preview").then(
+    (mod) => mod.PalettePreview,
+  ),
+);
+
 export function PaletteHero({
   state,
   actions,
@@ -118,6 +133,16 @@ export function PaletteHero({
 
   return (
     <>
+      {/* The rail names itself for assistive technology (below), but the page
+          also needs a heading outline: without this, everything between the
+          brief and the preview is one unlabelled run. Visually hidden, because
+          a caption over the poster is exactly the chrome L20 rules out. */}
+      <h2 className="sr-only">
+        {regenerating
+          ? "Palette, regenerating"
+          : `Generated palette, ${colors.length} colors`}
+      </h2>
+
       <BandRail
         role="list"
         aria-label={
@@ -163,9 +188,7 @@ export function PaletteHero({
             className="flex flex-col gap-3 py-3 text-micro tracking-[0.09em] text-muted-foreground uppercase sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <p aria-live="polite">
-                {colors.length} colors · HEX · RGB · HSL · OKLCH
-              </p>
+              <p>{colors.length} colors · HEX · RGB · HSL · OKLCH</p>
               <Button
                 type="button"
                 variant="outline"
@@ -177,6 +200,7 @@ export function PaletteHero({
                 <PlusIcon aria-hidden />
                 {full ? `Max ${MAX_COLOR_COUNT}` : "Add color"}
               </Button>
+              <PaletteToolbar palette={colors} onAnnounce={actions.announce} />
             </div>
 
             {meta ? (
@@ -187,6 +211,12 @@ export function PaletteHero({
               </p>
             ) : null}
           </Container>
+
+          <PalettePreview
+            palette={colors}
+            scheme={state.previewScheme}
+            onSchemeChange={actions.setPreviewScheme}
+          />
         </>
       )}
     </>

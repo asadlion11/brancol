@@ -36,15 +36,24 @@ export function EmptyState({
   onUseExample: (description: string) => void;
 }) {
   return (
-    <div className="flex flex-1 items-start py-14 sm:py-20 md:min-h-[26rem] md:items-center">
+    <section
+      aria-labelledby="empty-heading"
+      className="flex flex-1 items-start py-14 sm:py-20 md:min-h-[26rem] md:items-center"
+    >
       <Container size="wide">
         <Grid>
           <GridItem span={6}>
             <p className="type-eyebrow text-muted-foreground">No palette yet</p>
 
-            <p className="mt-5 max-w-xl text-title text-balance">
+            {/* The stage's heading. A real <h2> rather than styled text, so
+                the page has a heading outline a screen reader can jump
+                through instead of one long unmarked run of prose. */}
+            <h2
+              id="empty-heading"
+              className="mt-5 max-w-xl text-title text-balance"
+            >
               Say what you are making and how it should feel.
-            </p>
+            </h2>
 
             <p className="mt-4 max-w-lg text-body text-muted-foreground">
               The more the brief says about mood, audience and medium, the more
@@ -97,6 +106,6 @@ export function EmptyState({
           </GridItem>
         </Grid>
       </Container>
-    </div>
+    </section>
   );
 }
