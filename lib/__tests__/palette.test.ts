@@ -45,14 +45,17 @@ describe("coerceRole", () => {
 
 describe("targetRoles", () => {
   it("scales the mix with the count", () => {
-    expect(targetRoles(2)).toEqual(["primary", "background"]);
+    // A two-colour system is primary + secondary: the two roles a user with
+    // no existing palette actually needs named first.
+    expect(targetRoles(2)).toEqual(["primary", "secondary"]);
     expect(targetRoles(5)).toHaveLength(5);
     expect(targetRoles(10)).toHaveLength(10);
   });
 
-  it("always leads with primary", () => {
+  it("always leads with primary, then secondary", () => {
     for (let count = 2; count <= 10; count += 1) {
       expect(targetRoles(count)[0]).toBe("primary");
+      expect(targetRoles(count)[1]).toBe("secondary");
     }
   });
 });

@@ -21,7 +21,7 @@
 | 6 | Preview, motion & polish | **9 / 9** | **done** |
 | 7 | Hardening, testing & deployment | 10 / 11 | doing |
 
-**Acceptance checklist: 19 PASS · 4 PARTIAL · 1 BLOCKED.**
+**Acceptance checklist: 18 PASS · 4 PARTIAL · 1 BLOCKED · 1 WITHDRAWN (A.19, by owner direction).**
 
 **Rules**
 - A phase stays `todo` until **every** task inside it is `done`. There is no "mostly done".
@@ -48,8 +48,8 @@ row requires an explicit written decision from the spec author, logged in §6 �
 | L8 | Database | **None.** localStorage + URL state only. |
 | L9 | Auth | **None, by design.** No accounts, sessions, OAuth, or JWT. |
 | L10 | AI gateway | **OpenRouter**, server-side only |
-| L11 | Primary model | **`google/gemma-4-26b-a4b-it:free`** (Model 1) |
-| L12 | Fallback model | **`z-ai/glm-5.2:free`** (Model 2). Order: Model 1 → Model 2 → optional paid Model 3. |
+| L11 | Primary model | ~~`google/gemma-4-26b-a4b-it:free`~~ → **`poolside/laguna-s-2.1:free`** (changed by the owner 2026-08-29) |
+| L12 | Fallback model | ~~`z-ai/glm-5.2:free`~~ → **`nvidia/nemotron-3.5-lightning:free`** (changed by the owner 2026-08-29). Order: Model 1 → Model 2 → optional paid Model 3. |
 | L13 | Model abstraction | Ordered, **config-driven** adapter list via env. Adding/reordering models is an env change, never a rewrite. |
 | L14 | AI output contract | Model returns **`{role, name, hex}` only**. Server derives RGB/HSL/OKLCH via culori. |
 | L15 | Output format | **Strict JSON**, schema-enforced, server-validated, repaired or rejected |
@@ -59,7 +59,7 @@ row requires an explicit written decision from the spec author, logged in §6 �
 | L19 | Deployment | **Vercel** |
 | L20 | Visual direction | **Swiss minimal**; the generated palette is **the hero** (full-height color bands). Brand tokens per spec §7 are fixed. |
 | L21 | Motion | **One** deliberate moment (staggered band reveal) + copy toasts. Respect `prefers-reduced-motion`. No ambient animation. |
-| L22 | Count range | **2–10** colors. Starting colors **0–2**. |
+| L22 | Count range | **2–10** colors. ~~Starting colors 0–2~~ — **seeds removed from the UI 2026-08-29** by owner direction; the field survives in the schema for API/share-link compatibility only. |
 
 ---
 
@@ -368,4 +368,13 @@ Every status change, decision, deviation, or blocker gets a row. Newest last.
 | 2026-08-29 | P7-T9 | **BLOCKED** — cannot smoke-test production from here | Orchestrator | This sandbox cannot open TCP to Vercel's edge: `brancol.vercel.app`, the deployment URL, bare `vercel.app` and `example.vercel.app` all time out, while `nextjs.org`, `openrouter.ai` and `api.vercel.com` return 200. A blanket egress block on `*.vercel.app`, not a deployment fault. **Requires one browser visit by the user.** |
 | 2026-08-29 | P7-T10 | **done** — acceptance walkthrough executed | Orchestrator | **19 PASS · 4 PARTIAL (A.5, A.11, A.16, A.18) · 1 BLOCKED (A.22)**. Every verdict carries its evidence in §4. Nothing was ticked that was not actually run. |
 | 2026-08-29 | **BUILD STATUS** | **89 / 90 tasks complete** | Orchestrator | Only P7-T9 (production smoke test) remains, blocked by sandbox egress rather than by any defect. Final gate: tsc 0, lint 0, format 0, **200 tests**, build clean. |
+| 2026-08-29 | L11 / L12 | **Models changed by the owner** | Orchestrator | Primary → `poolside/laguna-s-2.1:free`, fallback → `nvidia/nemotron-3.5-lightning:free`. Synced to `.env.local`, `.env.production` and the Vercel project. |
+| 2026-08-29 | **R10** | **The new fallback cannot do the job** | Orchestrator | Measured on the real palette prompt: `poolside/laguna-s-2.1:free` returns clean JSON in **3.7s** (*Mist Gray*, *Soft Sage*) — a good primary. But `nvidia/nemotron-3.5-lightning:free` is a **reasoning model**: it spent **536 of 600** completion tokens on `reasoning_tokens` and emitted no JSON (13.2s, unparseable). In the app that reads as a timeout — observed `AbortError` after ~28s. **The chain currently has no working fallback.** Owner decision required. |
+| 2026-08-29 | UI | **Seeds / starting colors removed** | Orchestrator | Removed from the UI entirely by owner direction: the target user has no colour to seed with. `startingColors` stays in the Zod schema so the API contract and existing share links keep working; nothing in the UI populates it. This retires P3-T4 as a user-facing feature. |
+| 2026-08-29 | UI | Output chrome stripped | Orchestrator | Removed the contrast-below-AA notice (and its warning icon), the `N colors · HEX · RGB · HSL · OKLCH` summary, and the model/duration readout. The toolbar is now the only thing under the rail, centred. |
+| 2026-08-29 | UI | Composer reduced to one row | Orchestrator | Description (optional, no icon, renamed from "Describe your project") → count → Generate → New. |
+| 2026-08-29 | UI | **New button added** | Orchestrator | Clears the palette and restores every field to its default. Enabled only when a palette exists — i.e. exactly when the submit button reads "Regenerate". It also clears the saved snapshot, so a reload cannot resurrect the cleared palette. |
+| 2026-08-29 | UI | Colour fields are click-to-copy | Orchestrator | The whole band is a real `<button>` behind the controls (keyboard reachable, announced); lock/menu/hex sit above it on `z-10`. Clicking a colour copies its hex and toasts `Copied #RRGGBB`. |
+| 2026-08-29 | P2-T9 | A 2-colour system is now primary + **secondary** | Orchestrator | `ROLE_PRIORITY` reordered; it previously produced primary + background. Test updated to pin the new intent rather than deleted. |
+| 2026-08-29 | A.19 | **No longer met, by owner direction** | Orchestrator | Contrast warnings were removed from the UI. `lib/contrast.ts` and its tests remain, and `bestForeground()` still picks each band's foreground — so text on a band is still readable — but failing text/background *pairs* are no longer surfaced. Recorded because it reverses a previously-passing acceptance criterion. |
 | | | | | |

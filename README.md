@@ -15,10 +15,8 @@ included, so sending someone a palette is sending them a link.
 **What it does**
 
 - 2–10 colors per palette, each with a role and a human name.
-- Seed with up to 2 starting colors (your existing brand colors) and lock any
+- Lock any
   color so a regenerate keeps it byte-identical.
-- WCAG AA contrast audit on the role pairs that matter, shown as a note, never
-  as a gate.
 - Export as CSS custom properties, JSON, a Tailwind theme, or design tokens.
 - Share links (`?p=…`) and last-palette restore via `localStorage`.
 - Light and dark, 320px to desktop.
@@ -63,13 +61,13 @@ All five are **server-only**. None may ever be prefixed with `NEXT_PUBLIC_` —
 that would ship the value to the browser. `lib/env.ts` imports `server-only`,
 so an accidental client import is a build error rather than a leak.
 
-| Variable                     | Required | Default                          | What it does                                                                               |
-| ---------------------------- | -------- | -------------------------------- | ------------------------------------------------------------------------------------------ |
-| `OPENROUTER_API_KEY`         | **Yes**  | —                                | Authenticates every model call. Without it the app throws on the first generation request. |
-| `OPENROUTER_PRIMARY_MODEL`   | No       | `google/gemma-4-26b-a4b-it:free` | Model slug tried first.                                                                    |
-| `OPENROUTER_FALLBACK_MODELS` | No       | `z-ai/glm-5.2:free`              | Comma-separated slugs tried, in order, when the primary fails.                             |
-| `UPSTASH_REDIS_REST_URL`     | No\*     | —                                | Upstash Redis REST endpoint used for per-IP rate limiting.                                 |
-| `UPSTASH_REDIS_REST_TOKEN`   | No\*     | —                                | Token for the same database.                                                               |
+| Variable                     | Required | Default                              | What it does                                                                               |
+| ---------------------------- | -------- | ------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `OPENROUTER_API_KEY`         | **Yes**  | —                                    | Authenticates every model call. Without it the app throws on the first generation request. |
+| `OPENROUTER_PRIMARY_MODEL`   | No       | `poolside/laguna-s-2.1:free`         | Model slug tried first.                                                                    |
+| `OPENROUTER_FALLBACK_MODELS` | No       | `nvidia/nemotron-3.5-lightning:free` | Comma-separated slugs tried, in order, when the primary fails.                             |
+| `UPSTASH_REDIS_REST_URL`     | No\*     | —                                    | Upstash Redis REST endpoint used for per-IP rate limiting.                                 |
+| `UPSTASH_REDIS_REST_TOKEN`   | No\*     | —                                    | Token for the same database.                                                               |
 
 \* The Upstash pair is optional **together**: set both, or neither. Setting one
 without the other is a configuration error and fails fast at startup with a
@@ -148,7 +146,7 @@ Comma-separated, tried left to right. Whitespace around entries is ignored and
 duplicates are dropped:
 
 ```bash
-OPENROUTER_FALLBACK_MODELS=z-ai/glm-5.2:free,mistralai/mistral-small:free
+OPENROUTER_FALLBACK_MODELS=nvidia/nemotron-3.5-lightning:free,<paid-model>
 ```
 
 ### Adding a paid Model 3
@@ -168,7 +166,7 @@ turns an outage into a slightly slower success.
 
    ```bash
    # `vendor/model-slug` is a placeholder — substitute the real one.
-   OPENROUTER_FALLBACK_MODELS=z-ai/glm-5.2:free,vendor/model-slug
+   OPENROUTER_FALLBACK_MODELS=nvidia/nemotron-3.5-lightning:free,vendor/model-slug
    ```
 
 4. Set the same value in the host's environment (on Vercel: Project →
@@ -251,6 +249,18 @@ lib/
 ---
 
 ## Known limitations
+
+**Free models are a queue, not a quota.** `:free` slugs on OpenRouter share one
+provider pool with every other free user. A 429 here means the pool is busy —
+your account usage can read `$0.00` while every request fails. Observed to
+persist for days. The fix is a paid model as the last entry in
+`OPENROUTER_FALLBACK_MODELS`; it only fires when the free ones fail.
+
+**Not every model can do this job.** The palette prompt demands strict JSON in
+one shot. Reasoning models are a bad fit: `nvidia/nemotron-3.5-lightning:free`
+spends its whole completion budget on `reasoning_tokens` and emits no JSON,
+which reads as a timeout. Check a candidate returns parseable JSON inside the
+time budget before putting it in the chain.
 
 **The free model pool is unreliable, and it is the default configuration.**
 Both models brancol ships with are OpenRouter `:free` slugs, which draw on a

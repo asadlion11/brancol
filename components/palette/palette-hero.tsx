@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { PlusIcon, TriangleAlertIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 
-import { formatRatio } from "@/lib/contrast";
 import { MAX_COLOR_COUNT } from "@/lib/schemas";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -11,7 +10,6 @@ import { Hairline } from "@/components/ui/hairline";
 import { BandRail } from "@/components/palette/band";
 import { ColorBand } from "@/components/palette/color-band";
 import { PaletteToolbar } from "@/components/palette/palette-actions";
-import { contrastIssues } from "@/components/palette/contrast";
 import {
   MixingStatus,
   SkeletonBand,
@@ -20,59 +18,6 @@ import type {
   PaletteActions,
   PaletteState,
 } from "@/components/palette/use-palette";
-
-/**
- * The hero: the generated palette *is* the page.
- *
- * Bands are keyed on `state.bandKeys`, not on their hex and not on their
- * index. That is the whole of the lock guarantee on the client side: a locked
- * color comes back from the server byte-identical and carrying the key it
- * already had, so React reconciles it in place — same DOM node, same scroll,
- * same focus, nothing to re-run when Phase 6 puts a reveal on the new ones.
- *
- * Everything below the rail is a footnote to it: the count, the model, and any
- * role pair that cannot be read. None of it can stop the user doing anything.
- */
-
-/**
- * The AA audit, stated plainly.
- *
- * A warning and never a gate — the palette is exactly what was asked for, and
- * the fix (unlock, edit, regenerate) is one action away in the field above.
- */
-function ContrastNotice({ palette }: { palette: PaletteState["palette"] }) {
-  const issues = React.useMemo(() => contrastIssues(palette ?? []), [palette]);
-
-  if (issues.length === 0) return null;
-
-  return (
-    <>
-      <Hairline />
-      <Container size="wide" className="py-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:gap-4">
-          <p className="flex shrink-0 items-center gap-1.5 type-eyebrow text-destructive">
-            <TriangleAlertIcon aria-hidden className="size-3.5" />
-            Contrast below AA
-          </p>
-          <ul className="flex flex-col gap-1">
-            {issues.map((issue) => (
-              <li
-                key={`${issue.foreground.role}-${issue.background.role}`}
-                className="text-label text-muted-foreground"
-              >
-                <span className="text-foreground">
-                  {issue.foreground.name} on {issue.background.name}
-                </span>{" "}
-                — {formatRatio(issue.ratio)}, under the 4.5:1 WCAG AA minimum
-                for body text. Usable as large type or decoration.
-              </li>
-            ))}
-          </ul>
-        </div>
-      </Container>
-    </>
-  );
-}
 
 /**
  * The sample-UI preview is the only thing on the page that needs
@@ -88,7 +33,7 @@ export function PaletteHero({
   state: PaletteState;
   actions: PaletteActions;
 }) {
-  const { palette, bandKeys, meta, edit, lastCopy, focusKey } = state;
+  const { palette, bandKeys, edit, lastCopy, focusKey } = state;
   const colors = palette ?? [];
 
   /**
@@ -173,36 +118,26 @@ export function PaletteHero({
         <MixingStatus mixing={slots - heldCount} held={heldCount} />
       ) : (
         <>
-          <ContrastNotice palette={palette} />
-
+          {/* The contrast notice, the format summary and the model/duration
+              readout were all removed by product direction: the toolbar is the
+              only thing under the rail, and it is centred. */}
           <Hairline />
           <Container
             size="wide"
-            className="flex flex-col gap-3 py-3 text-micro tracking-[0.09em] text-muted-foreground uppercase sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 py-3 text-micro tracking-[0.09em] text-muted-foreground uppercase"
           >
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <p>{colors.length} colors · HEX · RGB · HSL · OKLCH</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="xs"
-                disabled={full}
-                onClick={actions.addColor}
-                className="uppercase"
-              >
-                <PlusIcon aria-hidden />
-                {full ? `Max ${MAX_COLOR_COUNT}` : "Add color"}
-              </Button>
-              <PaletteToolbar palette={colors} onAnnounce={actions.announce} />
-            </div>
-
-            {meta ? (
-              <p>
-                {meta.model}
-                {meta.fallbackUsed ? " (fallback)" : ""} ·{" "}
-                {(meta.durationMs / 1000).toFixed(1)}s
-              </p>
-            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              disabled={full}
+              onClick={actions.addColor}
+              className="uppercase"
+            >
+              <PlusIcon aria-hidden />
+              {full ? `Max ${MAX_COLOR_COUNT}` : "Add color"}
+            </Button>
+            <PaletteToolbar palette={colors} onAnnounce={actions.announce} />
           </Container>
         </>
       )}

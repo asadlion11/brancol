@@ -240,7 +240,7 @@ function BandCaption({
     // high. The caption therefore runs INLINE on small screens — role, name
     // and value on one line stay legible at ~32px — and only becomes the
     // stacked block once the bands are full-height columns.
-    <div className="order-1 flex min-w-0 flex-1 flex-row flex-wrap items-baseline gap-x-2 md:order-none md:mt-0 md:flex-none md:flex-col md:items-stretch">
+    <div className="relative z-10 order-1 flex min-w-0 flex-1 flex-row flex-wrap items-baseline gap-x-2 md:order-none md:mt-0 md:flex-none md:flex-col md:items-stretch">
       <span aria-hidden className="type-eyebrow opacity-75">
         {color.role}
       </span>
@@ -339,7 +339,21 @@ export function ColorBand({
           : bandLabel(color, failsAA)
       }
     >
-      <div className="order-2 flex shrink-0 flex-row-reverse items-center gap-x-2 gap-y-1 md:order-none md:w-full md:flex-row md:flex-wrap md:items-start md:justify-between">
+      {/* The whole colour field is the copy target. It is a real button, so
+          it is keyboard reachable and announces itself; the lock / menu / hex
+          controls sit above it on z-10 and keep their own click handling. */}
+      {held ? null : (
+        <button
+          type="button"
+          onClick={() => actions.copyColor(bandKey, "hex")}
+          className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-current"
+        >
+          <span className="sr-only">
+            Copy hex {color.hex} — {color.name}
+          </span>
+        </button>
+      )}
+      <div className="relative z-10 order-2 flex shrink-0 flex-row-reverse items-center gap-x-2 gap-y-1 md:order-none md:w-full md:flex-row md:flex-wrap md:items-start md:justify-between">
         <span aria-hidden className="type-hex text-micro opacity-55">
           {bandIndex(index)}
         </span>

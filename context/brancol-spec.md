@@ -347,3 +347,69 @@ type Color = {
 | `OPENROUTER_PRIMARY_MODEL` | Server | Default `google/gemma-4-26b-a4b-it:free` (Model 1). |
 | `OPENROUTER_FALLBACK_MODELS` | Server | Ordered list, e.g. `z-ai/glm-5.2:free,<paid-model>` (Model 2, then optional paid Model 3). |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN` | Server | Rate limiter backing store. |
+
+---
+
+## Appendix B — Owner amendments (2026-08-29)
+
+The build shipped against v1.0 of this spec. The owner then directed the
+following changes, which supersede the sections named. Recorded here so the
+spec and the running product do not drift apart.
+
+### B.1 Models (supersedes §3.4, L11/L12)
+
+| Slot | v1.0 | Now |
+|---|---|---|
+| Model 1 | `google/gemma-4-26b-a4b-it:free` | `poolside/laguna-s-2.1:free` |
+| Model 2 | `z-ai/glm-5.2:free` | `nvidia/nemotron-3.5-lightning:free` |
+
+**Open risk (R10).** Measured against the real palette prompt,
+`poolside/laguna-s-2.1:free` returns clean JSON in ~3.7s and is a sound
+primary. `nvidia/nemotron-3.5-lightning:free` is a *reasoning* model: it spent
+536 of 600 completion tokens on `reasoning_tokens` and emitted no JSON, which
+surfaces in the app as a ~28s timeout. **The chain therefore has no working
+fallback.** §3.4's own instruction — add a paid Model 3 before production
+reliance — still stands and is now more urgent, not less.
+
+### B.2 Starting colors withdrawn (supersedes §5.1, L22)
+
+Seeding 0–2 colors is **removed from the UI**. The target user does not have an
+existing color to seed with, so the control asked for a decision they cannot
+make. `startingColors` remains in the Zod schema so the REST contract and
+existing share links keep working; no UI path populates it.
+
+### B.3 Interface reduced (supersedes §7)
+
+The Swiss-minimal direction in §7 is superseded by an owner-supplied mockup.
+Concretely:
+
+- **One viewport, no scroll**, vertical or horizontal, at any width. This is now
+  a hard constraint. The band rail flexes into the leftover height and must
+  never carry a `min-height`.
+- Removed: the masthead headline and lede, the empty-state guidance, the
+  in-context UI preview, the footer, the character counter, the ⌘↵ hint, the
+  contrast-below-AA notice, the `N colors · HEX · RGB · HSL · OKLCH` summary,
+  and the model/duration readout.
+- The composer is a single row: Description (optional) → count → Generate → New.
+- Rounded corners, a gradient primary button and icon-led labels replace the
+  sharp-edged, hairline treatment specified in §7.
+- Below `md` a band is one row (role, name, hex, controls) so ten colors stay
+  legible on a phone; from `md` up the full-height poster columns return.
+
+### B.4 New behaviour
+
+- **A two-color system is primary + secondary** (was primary + background).
+- **The whole color field is click-to-copy**, toasting `Copied #RRGGBB`. It is a
+  real button behind the controls, so it is keyboard reachable and announced.
+- **A `New` button** clears the palette and restores defaults. It is enabled only
+  when a palette exists — exactly when the submit button reads "Regenerate" —
+  and it also clears the saved snapshot so a reload cannot resurrect the
+  cleared palette.
+- **The description is optional.** An empty brief is a valid request.
+
+### B.5 Acceptance impact
+
+**A.19 (contrast warnings surface when a pair fails WCAG AA) is withdrawn** by
+this direction. `lib/contrast.ts` and its tests remain, and `bestForeground()`
+still derives each band's own foreground so text on a band stays readable — but
+failing text/background *pairs* are no longer surfaced to the user.

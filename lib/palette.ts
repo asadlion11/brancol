@@ -30,15 +30,15 @@ import {
 
 /**
  * The order roles are introduced as the requested count grows. A 2-color system
- * is primary + background; each extra color adds the next most useful role.
+ * is primary + secondary; each extra color adds the next most useful role.
  * Semantic state colors sit last — they are only used if the model asks for them.
  */
 export const ROLE_PRIORITY: readonly Role[] = [
   "primary",
+  "secondary",
   "background",
   "text",
   "accent",
-  "secondary",
   "surface",
   "border",
   "muted",

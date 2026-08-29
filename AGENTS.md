@@ -66,3 +66,29 @@ everything is still testable without it:
   `[brancol:adapter]` walk the chain in the logs.
 
 Never edit `.env.local` / `.env.production`, and never print their values.
+
+## Product direction (updated 2026-08-29)
+
+The UI was deliberately stripped. Do not reintroduce any of the following
+without being asked — each was removed on purpose:
+
+- **Starting colors / seeds.** Removed from the UI entirely. The target user has
+  no palette to seed with, so the control asked for a decision they cannot make.
+  `startingColors` still exists in the schema for API and share-link
+  compatibility; nothing in the UI sets it.
+- **The in-context preview**, the **footer**, the **contrast-below-AA notice**,
+  the **format summary** (`N colors · HEX · RGB …`) and the **model/duration
+  readout**. All gone.
+- **Marketing copy.** No masthead, no lede, no empty-state guidance. The only
+  `h1` is `sr-only`, kept so the document retains a heading outline.
+
+Layout invariants:
+
+- **One viewport, no scroll — vertical or horizontal, at any width.** The band
+  rail flexes into whatever height is left; it must never carry a `min-height`.
+- Below `md` a band is a single row (role, name, hex, controls) so ten colors
+  stay legible on a phone. From `md` up they are full-height columns.
+- A two-color system is **primary + secondary** (`ROLE_PRIORITY` in
+  `lib/palette.ts`).
+- The whole color field is a copy button; the lock/menu controls sit above it
+  on `z-10`.

@@ -19,6 +19,7 @@ import {
 import { copyHex, copyText } from "@/lib/toast";
 import { ROLES, type Color, type PaletteMeta, type Role } from "@/lib/types";
 import type { Scheme } from "@/lib/variants";
+import { clearSnapshot } from "@/lib/storage";
 
 /**
  * The single owner of every piece of palette state.
@@ -153,6 +154,7 @@ type Action =
       description: string;
       source: "url" | "storage";
     }
+  | { type: "reset" }
   | { type: "hydrated" }
   | { type: "preview/scheme"; value: Scheme }
   | { type: "announce"; message: string };
@@ -468,6 +470,12 @@ function paletteReducer(state: PaletteState, action: Action): PaletteState {
         `Generation failed. ${action.error.title}.`,
       );
 
+    case "reset":
+      // A deliberate clear: everything returns to the initial state except
+      // `hydrated`, which must stay true or the restore effect would treat
+      // this as a fresh mount and put the old palette straight back.
+      return { ...initialPaletteState(), hydrated: state.hydrated };
+
     case "error/dismiss":
       return {
         ...state,
@@ -668,6 +676,8 @@ export type PaletteActions = {
   removeSeed: (id: string) => void;
   generate: () => void;
   dismissError: () => void;
+  /** Clear the palette and put every field back to its default. */
+  reset: () => void;
   /** Copy one format of one band, then remember which. */
   copyColor: (key: string, format: ColorFormat) => void;
   toggleLock: (key: string) => void;
@@ -733,6 +743,11 @@ export function usePaletteMachine(): {
       updateSeed: (id, value) => dispatch({ type: "seed/update", id, value }),
       removeSeed: (id) => dispatch({ type: "seed/remove", id }),
       dismissError: () => dispatch({ type: "error/dismiss" }),
+
+      reset: () => {
+        clearSnapshot();
+        dispatch({ type: "reset" });
+      },
 
       generate: () => {
         if (pending.current) return;
@@ -809,9 +824,9 @@ export function usePaletteMachine(): {
     [],
   );
 
-  // The brief is optional: count + seeds alone are a valid request.
-  const canSubmit =
-    state.status !== "pending" && !state.input.seeds.some(seedIsInvalid);
+  // The brief is optional and starting colours are gone, so the only thing
+  // that can block a submit now is a request already in flight.
+  const canSubmit = state.status !== "pending";
 
   return { state, actions, canSubmit };
 }
