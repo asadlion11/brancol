@@ -49,14 +49,6 @@ export function PaletteErrorState({
                 Generation failed — {error.code.replace(/_/g, " ")}
               </p>
 
-              <h2 className="mt-5 max-w-xl text-title text-balance">
-                {error.title}
-              </h2>
-
-              <p className="mt-4 max-w-lg text-body text-muted-foreground">
-                {error.message}
-              </p>
-
               {fields.length > 0 ? (
                 <dl className="mt-8 max-w-lg">
                   {fields.map(([field, messages]) => (
@@ -83,15 +75,8 @@ export function PaletteErrorState({
                   <RotateCcwIcon aria-hidden />
                   {retrying ? "Generating…" : "Try again"}
                 </Button>
-                <p className="text-label text-muted-foreground">
-                  Your brief is kept exactly as you wrote it.
-                </p>
               </div>
-            ) : (
-              <p className="mt-10 text-label text-muted-foreground">
-                Adjust the brief above, then generate again.
-              </p>
-            )}
+            ) : null}
           </GridItem>
         </Grid>
       </Container>
@@ -124,9 +109,8 @@ export function PaletteErrorNotice({
         role="alert"
         className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
       >
-        <p className="text-label">
-          <span className="font-semibold">{error.title}.</span>{" "}
-          <span className="text-muted-foreground">{error.message}</span>
+        <p className="type-eyebrow text-destructive">
+          Generation failed — {error.code.replace(/_/g, " ")}
         </p>
 
         <div className="flex shrink-0 items-center gap-1">

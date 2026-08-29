@@ -51,13 +51,16 @@ export const lockedColorSchema = z.union([
 ]);
 
 export const generateRequestSchema = z.object({
+  // Optional by product direction: an empty brief is valid and yields a
+  // palette from count + seeds alone. `lib/prompt.ts` already substitutes
+  // "(no description provided)" when this is blank.
   description: z
-    .string({ error: "Describe your project so brancol knows the context." })
+    .string()
     .trim()
-    .min(1, { error: "Describe your project so brancol knows the context." })
     .max(MAX_DESCRIPTION_LENGTH, {
       error: `Keep the description under ${MAX_DESCRIPTION_LENGTH} characters.`,
-    }),
+    })
+    .default(""),
   count: z
     .int({ error: "Pick how many colors you need." })
     .min(MIN_COLOR_COUNT, { error: `Pick at least ${MIN_COLOR_COUNT} colors.` })

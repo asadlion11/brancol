@@ -155,12 +155,7 @@ export function StartingColors({
             />
           ))}
         </ul>
-      ) : (
-        <p className="mt-3 max-w-xs text-label text-muted-foreground">
-          Already have a brand color? Seed up to {MAX_STARTING_COLORS} and the
-          palette is built around them.
-        </p>
-      )}
+      ) : null}
 
       <Button
         type="button"

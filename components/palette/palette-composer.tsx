@@ -80,7 +80,7 @@ export function PaletteComposer({
                 htmlFor="description"
                 className="type-eyebrow text-muted-foreground"
               >
-                Describe your project
+                Describe your project — optional
               </label>
 
               <Textarea

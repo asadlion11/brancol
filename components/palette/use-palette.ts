@@ -809,10 +809,9 @@ export function usePaletteMachine(): {
     [],
   );
 
+  // The brief is optional: count + seeds alone are a valid request.
   const canSubmit =
-    state.status !== "pending" &&
-    state.input.description.trim().length > 0 &&
-    !state.input.seeds.some(seedIsInvalid);
+    state.status !== "pending" && !state.input.seeds.some(seedIsInvalid);
 
   return { state, actions, canSubmit };
 }

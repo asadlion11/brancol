@@ -9,7 +9,6 @@ import {
 } from "@/components/palette/palette-error";
 import { PaletteHero } from "@/components/palette/palette-hero";
 import { PaletteSkeleton } from "@/components/palette/palette-skeleton";
-import { EmptyState } from "@/components/palette/empty-state";
 import { usePaletteMachine } from "@/components/palette/use-palette";
 import { usePalettePersistence } from "@/components/palette/use-persistence";
 
@@ -65,16 +64,6 @@ export function PaletteWorkspace() {
   // comment in `use-persistence.ts`.
   usePalettePersistence(state, actions);
 
-  const useExample = React.useCallback(
-    (description: string) => {
-      actions.setDescription(description);
-      const field = descriptionRef.current;
-      field?.focus();
-      field?.setSelectionRange(description.length, description.length);
-    },
-    [actions],
-  );
-
   const pending = state.status === "pending";
   const hasPalette = state.palette !== null && state.palette.length > 0;
 
@@ -113,9 +102,7 @@ export function PaletteWorkspace() {
         />
       ) : holding || hasPalette ? (
         <PaletteHero state={state} actions={actions} />
-      ) : (
-        <EmptyState onUseExample={useExample} />
-      )}
+      ) : null}
 
       <LiveRegion announcement={state.announcement} />
     </>

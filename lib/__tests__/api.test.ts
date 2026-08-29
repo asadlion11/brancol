@@ -138,11 +138,30 @@ describe("requestPalette — other failures", () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);
 
-    const result = await requestPalette({ description: "", count: 5 });
+    // count is out of range -> rejected client-side, no request made.
+    const result = await requestPalette({ description: "ok", count: 99 });
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.code).toBe("INVALID_INPUT");
+  });
+
+  it("accepts an empty brief — the description is optional", async () => {
+    stubFetch(jsonResponse(503, { error: { code: "UPSTREAM_UNAVAILABLE" } }));
+
+    await requestPalette({ description: "", count: 5 });
+
+    // An empty description is valid, so the request must reach the network
+    // rather than being rejected client-side. The 503 is irrelevant here —
+    // what matters is that a request was actually attempted with an empty
+    // description, and that the body carried it through.
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [, init] = (fetch as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0];
+    expect(JSON.parse(String((init as RequestInit).body))).toMatchObject({
+      description: "",
+      count: 5,
+    });
   });
 
   it("sits past the route's own 30s budget", () => {
