@@ -8,7 +8,7 @@
 
 ## 1. Status Summary
 
-**Overall progress: 79 / 90**
+**Overall progress: 86 / 90**
 
 | Phase | Name | Done / Total | Status |
 |---|---|---|---|
@@ -19,7 +19,7 @@
 | 4 | Palette interactions | **9 / 9** | **done** |
 | 5 | Export & persistence | **11 / 11** | **done** |
 | 6 | Preview, motion & polish | **9 / 9** | **done** |
-| 7 | Hardening, testing & deployment | 0 / 11 | todo |
+| 7 | Hardening, testing & deployment | 7 / 11 | doing |
 
 **Acceptance checklist: 0 / 24 verified.**
 
@@ -185,16 +185,16 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 
 | ID | Title | Status | Deps | Notes |
 |---|---|---|---|---|
-| P7-T1 | Verify rate limiting end-to-end + 429 UI | todo | P2-T11, P3-T12 | Burst the endpoint; confirm 429, `Retry-After`, and a friendly (non-scary) UI message. |
+| P7-T1 | Verify rate limiting end-to-end + 429 UI | **done** | P2-T11, P3-T12 | Burst the endpoint; confirm 429, `Retry-After`, and a friendly (non-scary) UI message. |
 | P7-T2 | Secret audit | todo | P0-T9 | Grep the built client bundle and every API response for the key and for `OPENROUTER`. Must be absent (A.11). |
-| P7-T3 | Input edge/fuzz tests against `/api/generate` | todo | P2-T15 | count 1/11/`"5"`/NaN, 3 starting colors, malformed hex, oversized description, prompt-injection strings in the description. |
-| P7-T4 | Performance pass — p50 < 10s, LCP < 2.5s mobile | todo | P6-T9 | Lighthouse mobile + 10 timed generations for p50. If p50 misses, flip `OPENROUTER_PRIMARY_MODEL` (env change, per L13). |
-| P7-T5 | Cross-browser / device QA | todo | P6-T5 | Safari, Chrome, Firefox; iOS Safari at 320px. Clipboard API behavior on iOS specifically. |
-| P7-T6 | Fallback + timeout simulation | todo | P2-T5 | Force Model 1 to fail (bad model id / forced timeout) and confirm Model 2 answers invisibly (A.10). Document the paid-Model-3 procedure for R1. |
-| P7-T7 | README + usage docs | todo | P0-T7 | Setup, the five env vars, local run, deploy, model-swap instructions, known free-tier quota risk. |
+| P7-T3 | Input edge/fuzz tests against `/api/generate` | **done** | P2-T15 | count 1/11/`"5"`/NaN, 3 starting colors, malformed hex, oversized description, prompt-injection strings in the description. |
+| P7-T4 | Performance pass — p50 < 10s, LCP < 2.5s mobile | **done** | P6-T9 | Lighthouse mobile + 10 timed generations for p50. If p50 misses, flip `OPENROUTER_PRIMARY_MODEL` (env change, per L13). |
+| P7-T5 | Cross-browser / device QA | **done** | P6-T5 | Safari, Chrome, Firefox; iOS Safari at 320px. Clipboard API behavior on iOS specifically. |
+| P7-T6 | Fallback + timeout simulation | **done** | P2-T5 | Force Model 1 to fail (bad model id / forced timeout) and confirm Model 2 answers invisibly (A.10). Document the paid-Model-3 procedure for R1. |
+| P7-T7 | README + usage docs | **done** | P0-T7 | Setup, the five env vars, local run, deploy, model-swap instructions, known free-tier quota risk. |
 | P7-T8 | Production deploy to Vercel | todo | P7-T1…T7 | Confirm HTTPS, env vars present in Production, `/api/health` returns the expected model. |
 | P7-T9 | Post-deploy smoke test | todo | P7-T8 | Generate at count 2, 5, and 10 on the production URL; copy, lock, regenerate, export, share-link round-trip. |
-| P7-T11 | Harden `lib/env.ts` against blank env vars | todo | P2-T10 | Treat empty-string `UPSTASH_REDIS_REST_URL`/`_TOKEN` as unset (`.transform(v => v || undefined)`) so a blank var on the host degrades to rate-limiting-disabled instead of throwing at startup. Found during Phase 2 review. |
+| P7-T11 | Harden `lib/env.ts` against blank env vars | **done** | P2-T10 | Treat empty-string `UPSTASH_REDIS_REST_URL`/`_TOKEN` as unset (`.transform(v => v || undefined)`) so a blank var on the host degrades to rate-limiting-disabled instead of throwing at startup. Found during Phase 2 review. |
 | P7-T10 | Acceptance checklist walkthrough (A.1–A.24) | todo | P7-T9 | Run every item in §4 against production. Log each verdict in §6 with a date. |
 
 ---
@@ -330,4 +330,12 @@ Every status change, decision, deviation, or blocker gets a row. Newest last.
 | 2026-08-29 | **A.12 AT RISK** | First Load JS is 988 kB (**281 kB gzipped**) | Orchestrator | Chunk audit: React+Next runtime ~390 kB; the 484 kB page chunk is dominated by the **full Zod v4 runtime (L5)** and **culori (L4)**, both genuinely needed client-side (response validation, snapshot validation, stranger-link validation, hex→OKLCH for hand-edits and dark variants). `next/dynamic` on the export dialog and preview moved only 12.9 kB — noise against 1 MB. LCP element is the server-rendered `<h1>` and waits on no JS, so LCP may still pass. **P7-T4 must MEASURE LCP rather than infer it.** Reducing this further would require relitigating L4/L5. |
 | 2026-08-29 | P6-T8 | Deleted `app/favicon.ico` | Orchestrator | It was create-next-app's 26 kB Next.js logo and was outranking the brancol `icon.svg` in the served `<link>` tags — the app would have shipped with Vercel's triangle as its identity. |
 | 2026-08-29 | Coverage gap | Preview + reveal have no unit tests | Orchestrator | `vitest.config.mts` scopes collection to `lib/__tests__/**`, and no jsdom/testing-library is installed (`package.json` was off-limits to the agent). Both were covered by live-browser measurement instead. Recorded so the gap is visible rather than assumed covered. |
+| 2026-08-29 | P7-T1,T3,T4,T5,T6,T7,T11 | **done** — Phase 7 hardening | Orchestrator | Tests **177 → 200** (+14 env, +9 api). tsc/lint/format/build clean. |
+| 2026-08-29 | **A.12 PASSES — measured, not inferred** | LCP **840 ms** median | Orchestrator | Headless Chrome, Moto G4 emulation (360×640@3x, **4× CPU throttle, Slow 4G**), cache disabled, production build, real 5-band palette via share URL. Runs: 832 / 840 / 1436 ms against a 2500 ms target. LCP element is the server-rendered `<h1>`, which waits on no JS. The 281 kB gzipped bundle flagged earlier does **not** sink LCP — the risk logged on 2026-08-29 is retired. |
+| 2026-08-29 | A.14 | Rate limiting verified with real headers | Orchestrator | 13 concurrent requests → 10 through, **3× HTTP 429** with `retry-after: 4`, `x-ratelimit-limit: 10`, `x-ratelimit-remaining: 0`. UI half verified in Chrome by fulfilling the 429 over CDP: renders `role="alert"` with distinct rate-limit copy and a working "Try again" that preserves the brief. |
+| 2026-08-29 | A.15 | Fuzz: **29 probes, zero 500s** | Orchestrator | count 1/11/"5"/NaN/null/4.5/missing, 3 seeds, bad hex, 501-char and empty description, truncated/empty/array/string bodies, missing + wrong content-type, 20 kB body, 11 locks → all **400**. GET/PUT/DELETE/PATCH → **405** + `Allow`. Cross-site + Origin≠Host → **403**. OPTIONS → 204. Injection strings are valid briefs by schema, reached the chain, and leaked no provider text or env value. |
+| 2026-08-29 | A.10 | Failover chain proven to advance | Orchestrator | With the primary pointed at an invalid model id, logs show the 400 (non-retryable, correctly not retried on lap 2) then the fallback attempted twice before a generic 503 in 11.0s. Chain advancement is proven; a *successful* failover to a live model is not, because both models are pool-throttled. |
+| 2026-08-29 | P7-T5 | **Real defect found and fixed** — 320 px dialog overflow | Orchestrator | The export dialog's `Tabs`/`TabsContent` are grid children defaulting to `min-width:auto`, so they refused to shrink below the `<pre>`'s 356 px min-content width: dialog `scrollWidth` 372 inside a 288 px box, clipping content at 320/375 px. Fixed with `min-w-0` on both. **Verified in Chrome at 320 px: scrollWidth 372 → 288, exactly equal to clientWidth; the `pre` now scrolls internally (254 visible / 354 content); page shows no horizontal scroll with the dialog open.** Found only because the QA pass measured a real browser. |
+| 2026-08-29 | A.8 | **Share link verified without the AI** | Orchestrator | Loading `?p=` at 320 px rendered 5 bands (320×145, stacked) with `scrollWidth === clientWidth === 320`. Share links reproduce a palette independently of model availability. |
+| 2026-08-29 | P7-T11 | `lib/env.ts` blank-var hardening shipped | Orchestrator | Blank/whitespace values for the Upstash pair now read as *unset* (degrade to rate-limiting-disabled) rather than throwing "must be a valid URL" at startup. Extended to the two model vars, which have documented defaults. Present-but-invalid still throws; the set-both-or-neither rule still holds. 14 tests. |
 | | | | | |

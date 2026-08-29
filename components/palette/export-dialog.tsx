@@ -135,6 +135,11 @@ export function ExportDialog({
         </DialogHeader>
 
         <Tabs
+          // min-w-0: a grid child defaults to min-width:auto and refuses to
+          // shrink below the <pre>'s min-content width, which pushed the
+          // dialog to 372px inside a 288px box at 320px viewports. With this
+          // the pre's own overflow-auto engages instead.
+          className="min-w-0"
           value={active}
           onValueChange={(value) => {
             setActive(value as ExportFormatId);
@@ -151,7 +156,7 @@ export function ExportDialog({
 
           {/* One panel, the live one. The other three exist as triggers only,
               so their payloads are never built. */}
-          <TabsContent value={active}>
+          <TabsContent className="min-w-0" value={active}>
             <p className="text-label text-muted-foreground">{format.hint}</p>
 
             <pre
