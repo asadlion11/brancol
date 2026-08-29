@@ -311,6 +311,54 @@
 }
 
 /* ==========================================================================
+   L21 — THE motion moment: the band reveal.
+
+   The product has exactly one animation, and this is it. Each band wipes in
+   from its top edge, one after the next, so the poster builds in reading
+   order instead of blinking into existence all at once.
+
+   Three deliberate choices:
+
+   1. **`clip-path`, not `translate`.** A full-height column sliding up would
+      leave a strip of page ground uncovered at the foot of the rail for the
+      length of the animation. A wipe reveals the band inside its final box,
+      so the rail is never anything but flush — and the edges stay hard,
+      which is the whole point of the field.
+
+   2. **`animation-fill-mode: backwards`, not `both`.** `backwards` holds the
+      from-state through the stagger delay and then hands the element back to
+      its ordinary styles when the run ends, leaving no `clip-path` behind to
+      establish a containing block for the rest of the page's life.
+
+   3. **Mount-scoped by construction.** A CSS animation runs when the element
+      is created. Locked bands keep their React key across a regeneration, so
+      their DOM node is never destroyed and this never runs on them a second
+      time — the lock guarantee and the reveal are the same mechanism seen
+      from two sides. No JS decides which bands animate; nothing has to.
+
+   The delay comes from `--band-delay`, set inline per band (see
+   `color-band.tsx`). The whole rule lives inside `no-preference`, so under
+   `prefers-reduced-motion: reduce` there is no animation at all — bands are
+   simply painted, in their final geometry, with nothing removed and nothing
+   degraded.
+   ========================================================================== */
+@keyframes band-reveal {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-slot="band"][data-reveal] {
+    animation: band-reveal 380ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+    animation-delay: var(--band-delay, 0ms);
+  }
+}
+
+/* ==========================================================================
    A.20 — reduced-motion baseline kill switch. Unlayered + !important so it
    outranks every normal declaration, including tw-animate-css utilities.
    L21: the product has exactly one motion moment; this removes it.
