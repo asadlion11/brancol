@@ -8,7 +8,7 @@
 
 ## 1. Status Summary
 
-**Overall progress: 59 / 90**
+**Overall progress: 66 / 90**
 
 | Phase | Name | Done / Total | Status |
 |---|---|---|---|
@@ -17,7 +17,7 @@
 | 2 | AI service layer (backend) | **15 / 15** | **done** |
 | 3 | Core generation UI | **12 / 12** | **done** |
 | 4 | Palette interactions | **9 / 9** | **done** |
-| 5 | Export & persistence | 0 / 11 | todo |
+| 5 | Export & persistence | 7 / 11 | doing |
 | 6 | Preview, motion & polish | 0 / 9 | todo |
 | 7 | Hardening, testing & deployment | 0 / 11 | todo |
 
@@ -155,17 +155,17 @@ Status values: `todo` · `doing` · `done` · `blocked`.
 
 | ID | Title | Status | Deps | Notes |
 |---|---|---|---|---|
-| P5-T1 | CSS variables exporter | todo | P4-T7 | `:root { --color-primary: #…; }` — role-named, with a dark-mode block from P5-T10. |
-| P5-T2 | JSON exporter | todo | P4-T7 | Full `Color[]` including all four formats. |
-| P5-T3 | Tailwind config exporter | todo | P5-T2 | `theme.extend.colors` snippet that pastes in and parses with zero edits (A.6). |
-| P5-T4 | Design-token exporter (Figma-compatible) | todo | P5-T2 | W3C design-token shape. Export only — **no Figma plugin** (spec §9). |
+| P5-T1 | CSS variables exporter | **done** | P4-T7 | `:root { --color-primary: #…; }` — role-named, with a dark-mode block from P5-T10. |
+| P5-T2 | JSON exporter | **done** | P4-T7 | Full `Color[]` including all four formats. |
+| P5-T3 | Tailwind config exporter | **done** | P5-T2 | `theme.extend.colors` snippet that pastes in and parses with zero edits (A.6). |
+| P5-T4 | Design-token exporter (Figma-compatible) | **done** | P5-T2 | W3C design-token shape. Export only — **no Figma plugin** (spec §9). |
 | P5-T5 | Export dialog: tabbed, copy + download | todo | P5-T1…T4, P1-T9 | Code shown in JetBrains Mono. Label: **Export tokens**. |
 | P5-T6 | localStorage persistence of palette + locks | todo | P4-T7 | Versioned key (`brancol.palette.v1`); ignore and discard unparseable payloads. |
 | P5-T7 | Hydration-safe restore on return | todo | P5-T6 | Restore after mount only. No SSR/client mismatch, no flash of empty state into filled state. |
-| P5-T8 | Palette ↔ URL encoding | todo | P4-T7 | Compact: hex without `#`, role as index. Must stay a sane length at count = 10. |
+| P5-T8 | Palette ↔ URL encoding | **done** | P4-T7 | Compact: hex without `#`, role as index. Must stay a sane length at count = 10. |
 | P5-T9 | Share link button + copy toast | todo | P5-T8 | Opening the link reproduces the palette **exactly**, including roles and names (A.8). |
-| P5-T10 | Light/dark variant derivation | todo | P2-T7, P1-T10 | Derive a compatible counterpart set with culori (lightness/chroma mapping), not a naive invert. |
-| P5-T11 | Export tests — outputs parse without edits | todo | P5-T1…T4 | Parse the CSS, JSON, and Tailwind output programmatically in a test. Directly backs A.6. |
+| P5-T10 | Light/dark variant derivation | **done** | P2-T7, P1-T10 | Derive a compatible counterpart set with culori (lightness/chroma mapping), not a naive invert. |
+| P5-T11 | Export tests — outputs parse without edits | **done** | P5-T1…T4 | Parse the CSS, JSON, and Tailwind output programmatically in a test. Directly backs A.6. |
 
 ### Phase 6 — Preview, motion & polish (0 / 9)
 
@@ -317,4 +317,8 @@ Every status change, decision, deviation, or blocker gets a row. Newest last.
 | 2026-08-27 | A.4 | Lock preservation **proven at the function level, not over HTTP** | Orchestrator | `normalizePalette()` — the same function the route calls — was given a model answer containing none of the locked hexes plus a deliberate lower-case near-miss `#5c3a22`. Both locked colours came back byte-identical with role, name and `locked:true` intact, and the near-miss did **not** displace `#5C3A21`. Pass 1 of the HTTP round trip succeeded; pass 2 was blocked (below). **A.4 stays unticked until the full round trip is re-run in P7.** |
 | 2026-08-27 | **Testing blocker** | Live AI testing exhausted for ~4h from this IP | Orchestrator | Two compounding limits: (1) the free model pool 429'd on all 4 internal attempts per request, and (2) chasing retries drove brancol's **own** per-IP limiter to its 60/day cap (`retry-after: 13293`s ≈ 3.7h, `x-ratelimit-remaining: 0`). The limiter behaved exactly as specced. **Sequencing response: Phases 5 and 6 need no AI calls, so they run now; live acceptance (A.1–A.9) moves to P7 after the window clears.** The localhost dev buckets in Upstash may be cleared before the P7 run. |
 | 2026-08-27 | Process | Subagent self-reported a constraint breach | Orchestrator | Phase 4 agent ran a read-only `git status` despite the no-git rule. Nothing staged, committed or changed; tree verified. Recorded because it was volunteered rather than hidden. |
+| 2026-08-29 | Infra | Session limit ended the Phase 5 agent mid-run | Orchestrator | Agent died after writing all 7 library modules but before its lint/format cleanup and the UI wiring. Salvaged rather than restarted: 2 lint errors (`no-assign-module-variable`) fixed by renaming a local identifier — the test's `new Function` evaluation was **kept**, since executing the emitted config is precisely what proves A.6 — and 5 files formatted. Re-gated green. |
+| 2026-08-29 | P5-T1,T2,T3,T4,T8,T10,T11 | **done** — export + persistence library layer | Orchestrator | tsc/lint/format/build clean. Tests **92 → 169** (+77). Verified by generating real output and reading it, not by trusting the agent: CSS emits `:root` + a `prefers-color-scheme: dark` block; Tailwind emits BOTH a v4 `@theme` block and a v3 `module.exports` config; tokens are W3C `$type`/`$value`. |
+| 2026-08-29 | P5-T10 | Light/dark derivation is genuinely hue-preserving | Orchestrator | Confirmed against real output: `background #F6F2EB → #0A0907` and `text #3A4A42 → #D7E1DC` swap ends, while `accent #D9A59A → #D6A398` and `primary #7FA88E → #83AC92` stay recognisably themselves. This is the OKLCH lightness remap that was specified, not the naive RGB invert that would have destroyed the hue relationships. |
+| 2026-08-29 | Rate limits | **Window has cleared** | Orchestrator | Several days have passed since the 60/day per-IP cap was hit, so live AI verification is available again for Phase 7 acceptance (A.1–A.9). |
 | | | | | |
