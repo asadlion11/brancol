@@ -24,6 +24,21 @@ function parseModelList(value: string): string[] {
     .filter((slug) => slug.length > 0);
 }
 
+/**
+ * Treats a present-but-blank variable as absent.
+ *
+ * Hosting dashboards (Vercel included) happily store an empty string for a
+ * variable someone added but never filled in, and a `.env` file with a bare
+ * `UPSTASH_REDIS_REST_URL=` does the same. Without this, `""` would fail the
+ * URL check and take the whole app down at first request — for an *optional*
+ * feature. Blank therefore means "not configured", which degrades to rate
+ * limiting disabled (with the warning `lib/ratelimit.ts` prints) instead.
+ */
+export function blankToUndefined(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  return value.trim().length === 0 ? undefined : value.trim();
+}
+
 // Zod v4: a single `error` param replaces `message` / `required_error`.
 const envSchema = z
   .object({
@@ -31,26 +46,41 @@ const envSchema = z
       .string({ error: "OPENROUTER_API_KEY is required." })
       .min(1, { error: "OPENROUTER_API_KEY must not be empty." }),
 
-    OPENROUTER_PRIMARY_MODEL: z
-      .string()
-      .min(1, { error: "OPENROUTER_PRIMARY_MODEL must not be empty." })
-      .default(DEFAULT_PRIMARY_MODEL),
+    // Blank counts as unset here too, so a host with an empty box falls back to
+    // the documented default instead of refusing to start.
+    OPENROUTER_PRIMARY_MODEL: z.preprocess(
+      blankToUndefined,
+      z
+        .string()
+        .min(1, { error: "OPENROUTER_PRIMARY_MODEL must not be empty." })
+        .default(DEFAULT_PRIMARY_MODEL),
+    ),
 
-    OPENROUTER_FALLBACK_MODELS: z
-      .string()
-      .min(1, { error: "OPENROUTER_FALLBACK_MODELS must not be empty." })
-      .default(DEFAULT_FALLBACK_MODELS)
-      .transform(parseModelList),
+    OPENROUTER_FALLBACK_MODELS: z.preprocess(
+      blankToUndefined,
+      z
+        .string()
+        .min(1, { error: "OPENROUTER_FALLBACK_MODELS must not be empty." })
+        .default(DEFAULT_FALLBACK_MODELS)
+        .transform(parseModelList),
+    ),
 
     // Rate limiting is optional in development: set both, or neither.
-    UPSTASH_REDIS_REST_URL: z
-      .url({ error: "UPSTASH_REDIS_REST_URL must be a valid URL." })
-      .optional(),
+    // A blank value counts as unset (see `blankToUndefined`).
+    UPSTASH_REDIS_REST_URL: z.preprocess(
+      blankToUndefined,
+      z
+        .url({ error: "UPSTASH_REDIS_REST_URL must be a valid URL." })
+        .optional(),
+    ),
 
-    UPSTASH_REDIS_REST_TOKEN: z
-      .string()
-      .min(1, { error: "UPSTASH_REDIS_REST_TOKEN must not be empty." })
-      .optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.preprocess(
+      blankToUndefined,
+      z
+        .string()
+        .min(1, { error: "UPSTASH_REDIS_REST_TOKEN must not be empty." })
+        .optional(),
+    ),
   })
   .refine(
     (value) =>
